@@ -6,7 +6,7 @@ namespace Oxygen.Utils
     {
         static Log() { }
 
-        private static readonly ManualLogSource source = new(Plugin.MODNAME);
+        private static ManualLogSource source = Logger.CreateLogSource(Plugin.MODNAME);
         public static void Debug(object msg) => source.LogDebug(msg);
         public static void Error(object msg) => source.LogError(msg);
         public static void Fatal(object msg) => source.LogFatal(msg);

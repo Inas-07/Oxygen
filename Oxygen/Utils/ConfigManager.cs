@@ -2,13 +2,13 @@
 using System.Text.Json;
 using MTFO.Utilities;
 using System.Collections.Generic;
-
+using Newtonsoft.Json.Utilities;
 
 namespace Oxygen.Utils
 {
     public class ConfigManager
     {
-        internal static readonly JsonSerializerOptions s_SerializerOptions = new JsonSerializerOptions
+        public static readonly JsonSerializerOptions s_SerializerOptions = new JsonSerializerOptions
         {
             AllowTrailingCommas = true,
             ReadCommentHandling = JsonCommentHandling.Skip,
@@ -17,18 +17,21 @@ namespace Oxygen.Utils
 
         public static void Load<T>(string file, out T config) where T : new()
         {
-            string filePath = Path.Combine(MTFO.Managers.ConfigManager.CustomPath, $"{file}.json");
-            if (PathUtil.CheckCustomFile($"{file}.json", out string path))
+            if (file.Length < ".json".Length)
             {
-                file = File.ReadAllText(filePath);
-                config = System.Text.Json.JsonSerializer.Deserialize<T>(file, s_SerializerOptions);
+                config = default(T);
+                return;
             }
-            else
+                //string filePath = Path.Combine(MTFO.Managers.ConfigManager.CustomPath, $"{file}.json");
+            if (file.Substring(file.Length - ".json".Length) != ".json")
             {
-                config = new();
-                file = System.Text.Json.JsonSerializer.Serialize(config);
-                File.WriteAllText(filePath, file);
+                file += ".json";
             }
+
+            string filePath = Path.Combine(MTFO.Managers.ConfigManager.CustomPath, "Oxygen", file);
+
+            file = File.ReadAllText(filePath);
+            config = System.Text.Json.JsonSerializer.Deserialize<T>(file, s_SerializerOptions);
         }
     }
     

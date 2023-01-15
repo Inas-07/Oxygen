@@ -14,7 +14,7 @@ namespace Oxygen.Components
         public SpriteRenderer m_airBar1;
         public SpriteRenderer m_airBar2;
         
-        private float m_airWidth = 300f;
+        private float m_airWidth = 100f;
         private float m_barHeightMin = 3f;
         private float m_barHeightMax = 9f;
 
@@ -39,20 +39,22 @@ namespace Oxygen.Components
             m_air2 =
                 GuiManager.Current.m_playerLayer.m_playerStatus.m_health2.gameObject.transform.parent.gameObject
                     .Instantiate<RectTransform>("AirFill Left");
-            
+
             // Move air bar down
-            m_airText.transform.Translate(0, -30f, 0);
-            m_air1.transform.Translate(0, -30f, 0);
-            m_air2.transform.Translate(0, 30f, 0);
+            m_airText.fontSize /= 2.0f;
+            m_airText.transform.Translate(0, 30f, 0);
+            m_air1.transform.Translate(0, 30f, 0);
+            m_air2.transform.Translate(0, 90f, 0);
             
             // Get left & right air bars
             m_airBar1 = m_air1.GetChild(1).GetComponent<SpriteRenderer>();
             m_airBar2 = m_air2.GetChild(1).GetComponent<SpriteRenderer>();
+
             
             // Remove yellow damage bars
-            m_air1.GetChild(2).GetComponent<SpriteRenderer>().enabled = false;
-            m_air2.GetChild(2).GetComponent<SpriteRenderer>().enabled = false;
-            
+            //m_air1.GetChild(2).GetComponent<SpriteRenderer>().enabled = false;
+            //m_air2.GetChild(2).GetComponent<SpriteRenderer>().enabled = false;
+
             // Initialize Bar
             UpdateAirBar(1f);
             

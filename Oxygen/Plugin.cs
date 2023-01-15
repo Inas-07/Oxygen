@@ -1,12 +1,15 @@
 ﻿using System;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
-using BepInEx.Logging;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using Oxygen.Components;
 using Oxygen.Utils;
 using System.Collections.Generic;
+using GTFO.API.Utilities;
+using System.IO;
+using BepInEx.Configuration;
+using static TenCC.Utils.ResilientTask;
 
 namespace Oxygen
 {
@@ -20,9 +23,31 @@ namespace Oxygen
             AUTHOR = "chasetug",
             GUID = "com." + AUTHOR + "." + MODNAME,
             VERSION = "1.0.0";
-        
-        public static OxygenConfig oxygenConfig;
+
+        //private static OxygenConfig oxygenConfig;
+        public static readonly string OXYGEN_CONFIG_PATH = Path.Combine(MTFO.Managers.ConfigManager.CustomPath, "Oxygen");
         public static Dictionary<uint, OxygenBlock> lookup = new();
+        private static LiveEditListener listener = null;
+
+        // TODO: add partial data esque live edit support
+        private static void LoadConfig()
+        {
+            foreach(string config_file in Directory.EnumerateFiles(OXYGEN_CONFIG_PATH, "*.json", SearchOption.AllDirectories))
+            {
+                OxygenConfig oxygenConfig;
+                ConfigManager.Load(config_file, out oxygenConfig);
+                foreach (OxygenBlock block in oxygenConfig.Blocks)
+                {
+                    foreach (uint id in block.LevelLayouts)
+                    {
+                        if (!lookup.ContainsKey(id))
+                        {
+                            lookup.Add(id, block);
+                        }
+                    }
+                }
+            }
+        }
 
         public override void Load()
         {
@@ -38,17 +63,40 @@ namespace Oxygen
             var harmony = new Harmony(GUID);
             harmony.PatchAll();
 
-            ConfigManager.Load("oxygen", out oxygenConfig);
-            foreach (OxygenBlock block in oxygenConfig.Blocks)
+            LoadConfig();
+
+            listener = LiveEdit.CreateListener(OXYGEN_CONFIG_PATH, "*.json", includeSubDir: true);
+            listener.FileChanged += Listener_FileChanged1;
+        }
+
+        private static void Listener_FileChanged1(LiveEditEventArgs e)
+        {
+            Utils.Log.Warning($"LiveEdit File Changed: {e.FullPath}.");
+
+            LiveEdit.TryReadFileContent(e.FullPath, (content) =>
             {
-                foreach (uint id in block.LevelLayouts)
-                {   
-                    if (!lookup.ContainsKey(id))
+                OxygenConfig oxygenConfig = System.Text.Json.JsonSerializer.Deserialize<OxygenConfig>(content, ConfigManager.s_SerializerOptions);
+                foreach (OxygenBlock block in oxygenConfig.Blocks)
+                {
+                    foreach (uint id in block.LevelLayouts)
                     {
+                        if (lookup.ContainsKey(id))
+                        {
+                            lookup.Remove(id);
+                        }
                         lookup.Add(id, block);
                     }
                 }
-            }
+
+                if (GameStateManager.CurrentStateName == eGameStateName.InLevel && lookup.ContainsKey(RundownManager.ActiveExpedition.LevelLayoutData))
+                {
+                    Utils.Log.Warning("Updating in level oxygen config.");
+
+                    OxygenBlock config = lookup[RundownManager.ActiveExpedition.LevelLayoutData];
+
+                    AirManager.Current.config = config;
+                }
+            });
         }
     }
 }
