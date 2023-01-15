@@ -7,10 +7,11 @@ using Oxygen.Utils;
 
 namespace Oxygen.Components
 {
+    // Align to vanilla in-game Fog Plane
     public class AirPlane : MonoBehaviour
     {
         public static AirPlane Current;
-        private EV_Plane airPlane = new EV_Plane();
+        public EV_Plane airPlane = new EV_Plane();
 
         public AirPlane(IntPtr value) : base(value)
         {

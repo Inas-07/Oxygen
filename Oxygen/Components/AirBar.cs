@@ -14,7 +14,7 @@ namespace Oxygen.Components
         public SpriteRenderer m_airBar1;
         public SpriteRenderer m_airBar2;
         
-        private float m_airWidth = 100f;
+        private float m_airWidth = 100.0f; // changed to 100f 
         private float m_barHeightMin = 3f;
         private float m_barHeightMax = 9f;
 
@@ -41,19 +41,30 @@ namespace Oxygen.Components
                     .Instantiate<RectTransform>("AirFill Left");
 
             // Move air bar down
-            m_airText.fontSize /= 2.0f;
-            m_airText.transform.Translate(0, 30f, 0);
-            m_air1.transform.Translate(0, 30f, 0);
-            m_air2.transform.Translate(0, 90f, 0);
-            
+            m_airText.fontSize /= 1.25f;
+            m_airText.transform.Translate(0, -30f, 0);
+            m_air1.transform.Translate(0, -30f, 0);
+            m_air2.transform.Translate(0, 30f, 0);
+
+            SpriteRenderer b1 = m_air1.GetChild(0).GetComponent<SpriteRenderer>();
+            SpriteRenderer b2 = m_air2.GetChild(0).GetComponent<SpriteRenderer>();
+            b1.size = new Vector2(m_airWidth, b1.size.y);
+            b2.size = new Vector2(m_airWidth, b2.size.y);
+
             // Get left & right air bars
             m_airBar1 = m_air1.GetChild(1).GetComponent<SpriteRenderer>();
             m_airBar2 = m_air2.GetChild(1).GetComponent<SpriteRenderer>();
 
-            
             // Remove yellow damage bars
-            //m_air1.GetChild(2).GetComponent<SpriteRenderer>().enabled = false;
-            //m_air2.GetChild(2).GetComponent<SpriteRenderer>().enabled = false;
+            m_air1.GetChild(2).GetComponent<SpriteRenderer>().enabled = false;
+            m_air2.GetChild(2).GetComponent<SpriteRenderer>().enabled = false;
+
+            //for (int i = 0; i < m_air1.childCount; i++)
+            //{
+            //    Log.Debug($"{i}");
+            //    Log.Debug(m_air1.GetChild(i).name);
+            //    Log.Debug(m_air1.GetChild(i).GetIl2CppType().ToString());
+            //}
 
             // Initialize Bar
             UpdateAirBar(1f);

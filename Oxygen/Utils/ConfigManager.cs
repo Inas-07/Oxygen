@@ -43,11 +43,13 @@ namespace Oxygen.Utils
     public class OxygenBlock
     {
         public List<uint> LevelLayouts { get; set; } = new() { 0U };
-        public float AirLoss { get; set; } = 0;
-        public float AirGain { get; set; } = 0;
-        public float DamageTime { get; set; } = 0; 
-        public float DamageAmount { get; set; } = 0;
+        public float AirLoss { get; set; } = 0.0f;
+        public float AirGain { get; set; } = 0.0f;
+        public float DamageTime { get; set; } = 0.0f; 
+        public float DamageAmount { get; set; } = 0.0f;
         public bool ShatterGlass { get; set; } = false;
-        public float ShatterAmount { get; set; } = 0;
+        public float ShatterAmount { get; set; } = 0.0f;
+        public float DamageThreshold { get; set; } = 0.1f;
+        public bool AlwaysDisplayAirBar { get; set; } = true;
     }
 }

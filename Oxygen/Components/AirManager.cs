@@ -49,12 +49,19 @@ namespace Oxygen.Components
             // Breathing intensity, Coughing, and Damage Tick
             if (airAmount == 1f)
             {
-                AirBar.Current.SetVisible(false);
+                if(config.AlwaysDisplayAirBar)
+                {
+                    AirBar.Current.SetVisible(true);
+                }
+                else
+                {
+                    AirBar.Current.SetVisible(false);
+                }
             }
             else
             {
                 AirBar.Current.SetVisible(true);
-            }   
+            }
             
             if (airAmount > 0.8f && airAmount <= 1.0f)
             {
@@ -74,16 +81,21 @@ namespace Oxygen.Components
                 m_playerAgent.Breathing.m_currentBreathingIntensity = 2;
                 PlayerDialogManager.WantToStartDialog(174U, m_playerAgent);
             }
-            else if (airAmount > 0.2)
+            else //if (airAmount > 0.2)
             {
                 //m_playerAgent.Breathing.TryChangeBreathingIntensity(3);
                 m_playerAgent.Breathing.m_currentBreathingIntensity = 3;
                 PlayerDialogManager.WantToStartDialog(173U, m_playerAgent);
             }
-            else if (airAmount < 0.2f)
+            //else if (airAmount < 0.2f)
+            //{
+            //    damageTick += Time.deltaTime;
+            //    PlayerDialogManager.WantToStartDialog(173U, m_playerAgent);
+            //}
+
+            if (airAmount <= config.DamageThreshold)
             {
                 damageTick += Time.deltaTime;
-                PlayerDialogManager.WantToStartDialog(173U, m_playerAgent);
             }
 
             if (damageTick > config.DamageTime)
