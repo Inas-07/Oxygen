@@ -7,7 +7,7 @@ namespace Oxygen.Components
 {
     public class AirManager : MonoBehaviour
     {
-        public static AirManager Current;
+        public static AirManager Current = null;
         private PlayerAgent m_playerAgent;
         private HUDGlassShatter m_hudGlass;
         private Dam_PlayerDamageBase Damage;
@@ -21,7 +21,7 @@ namespace Oxygen.Components
 
         public static void Setup()
         {
-            AirManager.Current =
+            if(Current == null) AirManager.Current =
                     PlayerManager.Current.m_localPlayerAgentInLevel.gameObject.AddComponent<AirManager>();
         }
 

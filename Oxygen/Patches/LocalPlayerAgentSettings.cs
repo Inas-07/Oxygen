@@ -27,7 +27,6 @@ namespace Oxygen.Patches
             if (Dimension.GetDimension(playerAgent.DimensionIndex, out dimension))
                 num = dimension.GroundY;
 
-            Utils.Log.Info("Updating air plane");
             PreLitVolume prelitVolume = playerAgent.FPSCamera.PrelitVolume;
             airPlaneCurrent.airPlane.invert = (double)prelitVolume.m_densityHeightMaxBoost > (double)prelitVolume.m_fogDensity;
             airPlaneCurrent.airPlane.contents = eEffectVolumeContents.Health;

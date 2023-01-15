@@ -10,8 +10,8 @@ namespace Oxygen.Components
     // Align to vanilla in-game Fog Plane
     public class AirPlane : MonoBehaviour
     {
-        public static AirPlane Current;
-        public EV_Plane airPlane = new EV_Plane();
+        public static AirPlane Current = null;
+        public EV_Plane airPlane = null;
 
         public AirPlane(IntPtr value) : base(value)
         {
@@ -19,20 +19,25 @@ namespace Oxygen.Components
         
         public static void Setup()
         {
-            AirPlane.Current = LocalPlayerAgentSettings.Current.gameObject.AddComponent<AirPlane>();
-            AirPlane.Current.OnExpeditionStarted();
+            if(Current == null)
+            {
+                Current = LocalPlayerAgentSettings.Current.gameObject.AddComponent<AirPlane>();
+            }
+            Current.OnExpeditionStarted();
         }
 
         public void OnExpeditionStarted()
         {
+            airPlane = new EV_Plane();
             ExpeditionInTierData activeExpedition = RundownManager.ActiveExpedition;
+            
             if (activeExpedition != null && activeExpedition.Expedition.FogSettings > 0U)
             {
                 SetAirPlane(GameDataBlockBase<FogSettingsDataBlock>.GetBlock(activeExpedition.Expedition.FogSettings));
             }
             else
             {
-                SetAirPlane(GameDataBlockBase<FogSettingsDataBlock>.GetBlock(21U));
+                Log.Error("FogSetting unspecified, will not apply Oxygen.");
             }
         }
         
