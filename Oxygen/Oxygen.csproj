@@ -1,15 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <LangVersion>Latest</LangVersion>
+        <Platforms>AnyCPU;x64</Platforms>
+      <AnalysisLevel>6.0-recommended</AnalysisLevel>
+      <LangVersion>latest</LangVersion>
+      <BaseOutputPath>G:\SteamLibrary\steamapps\common\GTFO\BepInEx\plugins</BaseOutputPath>
     </PropertyGroup>
-
-    <ItemGroup>
-      <Reference Include="MTFO, Version=4.3.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GTFO\BepInEx\plugins\MTFO.dll</HintPath>
-      </Reference>
-    </ItemGroup>
 
     <Import Project="Dependencies.props" />
 

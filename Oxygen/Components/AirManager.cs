@@ -58,21 +58,26 @@ namespace Oxygen.Components
             
             if (airAmount > 0.8f && airAmount <= 1.0f)
             {
-                m_playerAgent.Breathing.TryChangeBreathingIntensity(0);
+                //m_playerAgent.Breathing.TryChangeBreathingIntensity(0);
+                m_playerAgent.Breathing.m_currentBreathingIntensity = 0;
+
             }
             else if (airAmount > 0.6f)
             {
-                m_playerAgent.Breathing.TryChangeBreathingIntensity(1);
+                //m_playerAgent.Breathing.TryChangeBreathingIntensity(1);
+                m_playerAgent.Breathing.m_currentBreathingIntensity = 1;
                 PlayerDialogManager.WantToStartDialog(174U, m_playerAgent);
             }
             else if (airAmount > 0.4f)
             {
-                m_playerAgent.Breathing.TryChangeBreathingIntensity(2);
+                //m_playerAgent.Breathing.TryChangeBreathingIntensity(2);
+                m_playerAgent.Breathing.m_currentBreathingIntensity = 2;
                 PlayerDialogManager.WantToStartDialog(174U, m_playerAgent);
             }
             else if (airAmount > 0.2)
             {
-                m_playerAgent.Breathing.TryChangeBreathingIntensity(3);
+                //m_playerAgent.Breathing.TryChangeBreathingIntensity(3);
+                m_playerAgent.Breathing.m_currentBreathingIntensity = 3;
                 PlayerDialogManager.WantToStartDialog(173U, m_playerAgent);
             }
             else if (airAmount < 0.2f)

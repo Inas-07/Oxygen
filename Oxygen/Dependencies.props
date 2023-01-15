@@ -1,14 +1,4 @@
 <Project InitialTargets="ValidateGamePath">
-  <!--
-    Add a GameFolder.props file to the solution to set your game path:
-
-    <Project>
-      <PropertyGroup>
-        <GameFolder>C:\Program Files (x86)\Steam\steamapps\common\GTFO</GameFolder>
-      </PropertyGroup>
-    </Project>
-  -->
-
   <Import Project="$(MSBuildThisFileDirectory)/GameFolder.props" Condition="Exists('$(MSBuildThisFileDirectory)/GameFolder.props')" />
   <Target Name="ValidateGamePath">
     <Error Text="The GameFolder property must be set to the GTFO game folder." Condition="'$(GameFolder)' == '' or !Exists('$(GameFolder)')" />
@@ -16,15 +6,11 @@
 
   <PropertyGroup>
     <BIELibsFolder>$(GameFolder)/BepInEx/core</BIELibsFolder>
-    <MonoLibsFolder>$(GameFolder)/mono/Managed</MonoLibsFolder>
-    <UnhollowedLibsFolder>$(GameFolder)/BepInEx/unhollowed</UnhollowedLibsFolder>
+    <DotNetFolder>$(GameFolder)/dotnet/</DotNetFolder>
+    <InteropFolder>$(GameFolder)/BepInEx/interop</InteropFolder>
     <PluginLibFolder>$(GameFolder)/Plugins</PluginLibFolder>
+    <pluginsFolder>$(GameFolder)/BepInEx/plugins</pluginsFolder>
   </PropertyGroup>
-
-  <!-- Twitch Libs -->
-  <ItemGroup>
-    <!--Reference Include="../_twitchlib_2.0/*.dll"/-->
-  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="$(PluginLibFolder)/*.dll" Private="false" />
@@ -34,20 +20,29 @@
   <ItemGroup>
     <Reference Include="$(BIELibsFolder)/BepInEx.*.dll" Private="false" />
     <Reference Include="$(BIELibsFolder)/0Harmony.dll" Private="false" />
-    <Reference Include="$(BIELibsFolder)/UnhollowerBaseLib.dll" Private="false" />
-    <Reference Include="$(BIELibsFolder)/UnhollowerRuntimeLib.dll" Private="false" />
+    <Reference Include="$(BIELibsFolder)\MonoMod.RuntimeDetour.dll" Private="false" />
+    <Reference Include="$(BIELibsFolder)\Il2CppInterop.*.dll" Private="false" />
   </ItemGroup>
 
-  <!-- BepInEx mono libs -->
+  <!-- CorLibs -->
   <ItemGroup>
-    <Reference Include="$(MonoLibsFolder)/Microsoft.Bcl.AsyncInterfaces.dll" Private="false" />
-    <Reference Include="$(MonoLibsFolder)/System.Text.Json.dll" Private="false" />
+    <Reference Include="$(DotNetFolder)\*.dll" Private="false" />
+    <Reference Include="$(DotNetFolder)/System.Private.CoreLib.dll" Private="false" />
   </ItemGroup>
 
-  <!-- Unhollowed assemblies -->
+  
+  <!-- interop assemblies -->
   <ItemGroup>
-    <Reference Include="$(UnhollowedLibsFolder)/*.dll" Private="false" />
-    <Reference Remove="$(UnhollowedLibsFolder)/netstandard.dll" />
-    <Reference Remove="$(UnhollowedLibsFolder)/Newtonsoft.Json.dll" />
+    <Reference Include="$(InteropFolder)/*.dll" Private="false" />
+    <!--<reference remove="$(interopfolder)/netstandard.dll" />
+    <Reference Remove="$(InteropFolder)/Newtonsoft.Json.dll" />-->
   </ItemGroup>
+
+  <!-- plugins folder -->
+  <ItemGroup>
+    <Reference Include="$(pluginsFolder)/MTFO.dll" Private="false" />
+    <Reference Include="$(PluginsFolder)/GTFO-API.dll" Private="false" />
+  </ItemGroup>
+
+
 </Project>

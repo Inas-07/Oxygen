@@ -1,9 +1,9 @@
 ﻿using System;
 using BepInEx;
-using BepInEx.IL2CPP;
+using BepInEx.Unity.IL2CPP;
 using BepInEx.Logging;
 using HarmonyLib;
-using UnhollowerRuntimeLib;
+using Il2CppInterop.Runtime.Injection;
 using Oxygen.Components;
 using Oxygen.Utils;
 using System.Collections.Generic;

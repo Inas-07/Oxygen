@@ -21,12 +21,12 @@ namespace Oxygen.Utils
             if (PathUtil.CheckCustomFile($"{file}.json", out string path))
             {
                 file = File.ReadAllText(filePath);
-                config = JsonSerializer.Deserialize<T>(file, s_SerializerOptions);
+                config = System.Text.Json.JsonSerializer.Deserialize<T>(file, s_SerializerOptions);
             }
             else
             {
                 config = new();
-                file = JsonSerializer.Serialize(config);
+                file = System.Text.Json.JsonSerializer.Serialize(config);
                 File.WriteAllText(filePath, file);
             }
         }
