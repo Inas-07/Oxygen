@@ -37,7 +37,7 @@ namespace Oxygen
                 ConfigManager.Load(config_file, out oxygenConfig);
                 foreach (OxygenBlock block in oxygenConfig.Blocks)
                 {
-                    foreach (uint id in block.LevelLayouts)
+                    foreach (uint id in block.FogSettings)
                     {
                         if (!lookup.ContainsKey(id))
                         {
@@ -77,7 +77,7 @@ namespace Oxygen
                 OxygenConfig oxygenConfig = System.Text.Json.JsonSerializer.Deserialize<OxygenConfig>(content, ConfigManager.s_SerializerOptions);
                 foreach (OxygenBlock block in oxygenConfig.Blocks)
                 {
-                    foreach (uint id in block.LevelLayouts)
+                    foreach (uint id in block.FogSettings)
                     {
                         if (lookup.ContainsKey(id))
                         {
@@ -87,13 +87,9 @@ namespace Oxygen
                     }
                 }
 
-                if (GameStateManager.CurrentStateName == eGameStateName.InLevel && lookup.ContainsKey(RundownManager.ActiveExpedition.LevelLayoutData))
+                if (GameStateManager.IsInExpedition)
                 {
-                    Utils.Log.Warning("Updating in level oxygen config.");
-
-                    OxygenBlock config = lookup[RundownManager.ActiveExpedition.LevelLayoutData];
-
-                    AirManager.Current.config = config;
+                    AirManager.Current.UpdateAirConfig(AirManager.Current.FogSetting());
                 }
             });
         }

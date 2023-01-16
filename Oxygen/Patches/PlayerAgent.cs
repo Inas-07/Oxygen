@@ -1,7 +1,5 @@
 ﻿using HarmonyLib;
-using InControl;
 using Oxygen.Components;
-using Oxygen.Utils;
 using Player;
 
 namespace Oxygen.Patches

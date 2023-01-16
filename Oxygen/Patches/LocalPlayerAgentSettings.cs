@@ -31,7 +31,7 @@ namespace Oxygen.Patches
             airPlaneCurrent.airPlane.invert = (double)prelitVolume.m_densityHeightMaxBoost > (double)prelitVolume.m_fogDensity;
             airPlaneCurrent.airPlane.contents = eEffectVolumeContents.Health;
             airPlaneCurrent.airPlane.modification = eEffectVolumeModification.Inflict;
-            airPlaneCurrent.airPlane.modificationScale = AirManager.Current.config.AirLoss;
+            airPlaneCurrent.airPlane.modificationScale = AirManager.Current.AirLoss();
             airPlaneCurrent.airPlane.lowestAltitude = prelitVolume.m_densityHeightAltitude + num;
             airPlaneCurrent.airPlane.highestAltitude = prelitVolume.m_densityHeightAltitude + prelitVolume.m_densityHeightRange + num;
         }
