@@ -4,24 +4,26 @@ using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using Oxygen.Components;
-using Oxygen.Utils;
 using System.Collections.Generic;
 using GTFO.API.Utilities;
 using System.IO;
-
+using Oxygen.Config;
 
 namespace Oxygen
 {
     [BepInPlugin(GUID, MODNAME, VERSION)]
     [BepInProcess("GTFO.exe")]
     [BepInDependency(MTFO.MTFO.GUID, BepInDependency.DependencyFlags.HardDependency)]
+    [BepInDependency(Utils.PartialData.MTFOUtil.PLUGIN_GUID, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(Utils.PartialData.MTFOPartialDataUtil.PLUGIN_GUID, BepInDependency.DependencyFlags.SoftDependency)]
+
     public class Plugin : BasePlugin
     {
         public const string
             MODNAME = "Oxygen",
             AUTHOR = "chasetug",
             GUID = "com." + AUTHOR + "." + MODNAME,
-            VERSION = "1.0.0";
+            VERSION = "1.0.1";
 
         //private static OxygenConfig oxygenConfig;
         public static readonly string OXYGEN_CONFIG_PATH = Path.Combine(MTFO.Managers.ConfigManager.CustomPath, "Oxygen");
@@ -74,7 +76,7 @@ namespace Oxygen
 
             LiveEdit.TryReadFileContent(e.FullPath, (content) =>
             {
-                OxygenConfig oxygenConfig = System.Text.Json.JsonSerializer.Deserialize<OxygenConfig>(content, ConfigManager.s_SerializerOptions);
+                OxygenConfig oxygenConfig = ConfigManager.Deserialize<OxygenConfig>(content);
                 foreach (OxygenBlock block in oxygenConfig.Blocks)
                 {
                     foreach (uint id in block.FogSettings)
@@ -90,6 +92,7 @@ namespace Oxygen
                 if (GameStateManager.IsInExpedition)
                 {
                     AirManager.Current.UpdateAirConfig(AirManager.Current.FogSetting());
+                    AirBar.Current.UpdateAirTextPos();
                 }
             });
         }

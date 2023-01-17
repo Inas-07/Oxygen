@@ -4,22 +4,25 @@ using UnityEngine;
 using Oxygen.Utils;
 using GameData;
 using Localization;
+using Oxygen.Config;
 
 namespace Oxygen.Components
 {
     public class AirBar : MonoBehaviour
     {
         public static AirBar Current = null;
-        //private static TextDataBlock airLocalization = null;
-        private static readonly uint airLocalizationID = 2999;
 
-        public TextMeshPro m_airText = null; // air percentage %
-        //public TextMeshPro m_airTextLocalization = null; // TODO: add localization. ref monocode: PUI_LocalPlayerStatus.UpdateInfection
-        
-        public RectTransform m_air1 = null;
-        public RectTransform m_air2 = null;
-        public SpriteRenderer m_airBar1 = null;
-        public SpriteRenderer m_airBar2 = null;
+        private TextMeshPro m_airText = null; // air percentage %
+
+        private TextMeshPro m_airTextLocalization = null;
+        private float m_airTextX = 0f;
+        private float m_airTextY = 0f;
+        private float m_airTextZ = 0f;
+
+        private RectTransform m_air1 = null;
+        private RectTransform m_air2 = null;
+        private SpriteRenderer m_airBar1 = null;
+        private SpriteRenderer m_airBar2 = null;
         
         private float m_airWidth = 100.0f;
         private float m_barHeightMin = 3f;
@@ -27,7 +30,7 @@ namespace Oxygen.Components
         //private bool m_airWarningLoop = false;
 
         private Color m_airLow = new Color(0, 0.5f, 0.5f);
-        private Color m_airHigh = new Color(0.0f, 0.1f, 0.8f);
+        private Color m_airHigh = new Color(0.0f, 0.3f, 0.8f);
 
         public AirBar(IntPtr value) : base(value) { }
 
@@ -50,13 +53,18 @@ namespace Oxygen.Components
                 m_airText.transform.Translate(0, -30f, 0);
             }
 
-            //if(m_airTextLocalization == null)
-            //{
-            //    m_airTextLocalization = GuiManager.Current.m_playerLayer.m_playerStatus.m_infectionText.gameObject.Instantiate<TextMeshPro>("AirText Localization");
-            //    m_airTextLocalization.enabled = true;
-            //    m_airTextLocalization.fontSize /= 1.5f;
-            //    m_airTextLocalization.transform.Translate(300.0f - m_airWidth, -120f, 0);
-            //}
+            if (m_airTextLocalization == null)
+            {
+                m_airTextLocalization = GuiManager.Current.m_playerLayer.m_playerStatus.m_pulseText.gameObject.Instantiate<TextMeshPro>("AirText Localization");
+                m_airTextLocalization.enabled = true;
+                //m_airTextLocalization.fontSize /= 1.5f;
+                m_airTextLocalization.transform.Translate(300.0f - m_airWidth, -45.0f, 0);
+                m_airTextX = m_airTextLocalization.transform.position.x;
+                m_airTextY = m_airTextLocalization.transform.position.y;
+                m_airTextZ = m_airTextLocalization.transform.position.z;
+                
+                UpdateAirTextPos();
+            }
 
             // right air bars
             if (m_air1 == null)
@@ -120,15 +128,24 @@ namespace Oxygen.Components
         {
             Color color = Color.Lerp(m_airLow, m_airHigh, val);
 
-            m_airText.text = (val * 100f).ToString("N0") + "%";
+            // percentage
+            //m_airText.text = (val * 100f).ToString("N0") + "%";
+            m_airText.text = "O<size=75%>2</size>";
             m_airText.color = color;
             m_airText.ForceMeshUpdate(true);
 
-            //m_airTextLocalization.color = color;
-            //m_airTextLocalization.text = Text.Get(airLocalizationID);
-            //m_airTextLocalization.ForceMeshUpdate(true);
+            var AirText = AirManager.Current.AirText();
+            m_airTextLocalization.color = color;
+            m_airTextLocalization.text = AirText.Text;
+            m_airTextLocalization.ForceMeshUpdate(true);
         }
-        
+
+        public void UpdateAirTextPos()
+        {
+            var AirText = AirManager.Current.AirText();
+            m_airTextLocalization.transform.SetPositionAndRotation(new(m_airTextX + AirText.x, m_airTextY + AirText.y, m_airTextZ), m_airTextLocalization.transform.rotation);
+        }
+
         // Set visibility of air bar
         public void SetVisible(bool vis)
         {

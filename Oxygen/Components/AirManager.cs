@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System;
-using Oxygen.Utils;
 using Player;
 using AK;
 using GameData;
+using Oxygen.Config;
 
 namespace Oxygen.Components
 {
@@ -172,5 +172,7 @@ namespace Oxygen.Components
         public bool AlwaysDisplayAirBar() => this.config == null ? false : config.AlwaysDisplayAirBar;
 
         public uint FogSetting() => fogSetting;
+
+        public AirText AirText() => config.AirText;
     }
 }
