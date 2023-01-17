@@ -6,6 +6,7 @@ using Il2CppInterop.Runtime.Injection;
 using Oxygen.Components;
 using System.Collections.Generic;
 using GTFO.API.Utilities;
+using GTFO.API;
 using System.IO;
 using Oxygen.Config;
 
@@ -13,6 +14,7 @@ namespace Oxygen
 {
     [BepInPlugin(GUID, MODNAME, VERSION)]
     [BepInProcess("GTFO.exe")]
+    [BepInDependency("dev.gtfomodding.gtfo-api", BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency(MTFO.MTFO.GUID, BepInDependency.DependencyFlags.HardDependency)]
     [BepInDependency(Utils.PartialData.MTFOUtil.PLUGIN_GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(Utils.PartialData.MTFOPartialDataUtil.PLUGIN_GUID, BepInDependency.DependencyFlags.SoftDependency)]
@@ -30,10 +32,24 @@ namespace Oxygen
         public static Dictionary<uint, OxygenBlock> lookup = new();
         private static LiveEditListener listener = null;
 
-        // TODO: add partial data esque live edit support
-        private static void LoadConfig()
+        public override void Load()
         {
-            foreach(string config_file in Directory.EnumerateFiles(OXYGEN_CONFIG_PATH, "*.json", SearchOption.AllDirectories))
+            ClassInjector.RegisterTypeInIl2Cpp<AirManager>();
+            LevelAPI.OnBuildStart += AirManager.Setup;
+            //RundownManager.add_OnExpeditionGameplayStarted((Action) AirManager.Setup);
+
+            ClassInjector.RegisterTypeInIl2Cpp<AirBar>();
+            LevelAPI.OnBuildStart += AirBar.Setup;
+            //RundownManager.add_OnExpeditionGameplayStarted((Action) AirBar.Setup);
+
+            ClassInjector.RegisterTypeInIl2Cpp<AirPlane>();
+            LevelAPI.OnBuildStart += AirPlane.Setup;
+            //RundownManager.add_OnExpeditionGameplayStarted((Action) AirPlane.Setup);
+
+            var harmony = new Harmony(GUID);
+            harmony.PatchAll();
+
+            foreach (string config_file in Directory.EnumerateFiles(OXYGEN_CONFIG_PATH, "*.json", SearchOption.AllDirectories))
             {
                 OxygenConfig oxygenConfig;
                 ConfigManager.Load(config_file, out oxygenConfig);
@@ -48,23 +64,6 @@ namespace Oxygen
                     }
                 }
             }
-        }
-
-        public override void Load()
-        {
-            ClassInjector.RegisterTypeInIl2Cpp<AirManager>();
-            RundownManager.add_OnExpeditionGameplayStarted((Action) AirManager.Setup);
-
-            ClassInjector.RegisterTypeInIl2Cpp<AirBar>();
-            RundownManager.add_OnExpeditionGameplayStarted((Action) AirBar.Setup);
-
-            ClassInjector.RegisterTypeInIl2Cpp<AirPlane>();
-            RundownManager.add_OnExpeditionGameplayStarted((Action) AirPlane.Setup);
-
-            var harmony = new Harmony(GUID);
-            harmony.PatchAll();
-
-            LoadConfig();
 
             listener = LiveEdit.CreateListener(OXYGEN_CONFIG_PATH, "*.json", includeSubDir: true);
             listener.FileChanged += Listener_FileChanged1;
@@ -92,7 +91,6 @@ namespace Oxygen
                 if (GameStateManager.IsInExpedition)
                 {
                     AirManager.Current.UpdateAirConfig(AirManager.Current.FogSetting());
-                    AirBar.Current.UpdateAirTextPos();
                 }
             });
         }

@@ -11,6 +11,16 @@ namespace Oxygen.Patches
     {
         public static void Postfix(LocalPlayerAgentSettings __instance, float amount)
         {
+            if (!AirManager.Current.HasAirConfig())
+            {
+                if (AirPlane.Current.isAirPlaneRegistered)
+                {
+                    EffectVolumeManager.UnregisterVolume((EffectVolume)AirPlane.Current.airPlane);
+                    AirPlane.Current.isAirPlaneRegistered = false;
+                }
+                return;
+            }
+
             if (__instance.m_targetFogSettings == null || !SNet.LocalPlayer.HasPlayerAgent) // consider use PlayerManager? Or adheres to mono?
                 return;
 
@@ -34,6 +44,12 @@ namespace Oxygen.Patches
             airPlaneCurrent.airPlane.modificationScale = AirManager.Current.AirLoss();
             airPlaneCurrent.airPlane.lowestAltitude = prelitVolume.m_densityHeightAltitude + num;
             airPlaneCurrent.airPlane.highestAltitude = prelitVolume.m_densityHeightAltitude + prelitVolume.m_densityHeightRange + num;
+
+            if (!AirPlane.Current.isAirPlaneRegistered)
+            {
+                EffectVolumeManager.RegisterVolume((EffectVolume)AirPlane.Current.airPlane);
+                AirPlane.Current.isAirPlaneRegistered = true;
+            }
         }
     }
 }

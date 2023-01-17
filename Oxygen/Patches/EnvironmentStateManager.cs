@@ -12,6 +12,12 @@ namespace Oxygen.Patches
             if (AirManager.Current == null) return;
 
             AirManager.Current.UpdateAirConfig(fogDataId);
+            AirBar.Current.UpdateAirText(AirManager.Current.config);
+
+            if(AirManager.Current != null && !AirManager.Current.HasAirConfig()) 
+            {
+                AirManager.Current.StopInfectionLoop();
+            }
         }
     }
 }

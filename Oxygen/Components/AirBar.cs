@@ -2,8 +2,6 @@
 using System;
 using UnityEngine;
 using Oxygen.Utils;
-using GameData;
-using Localization;
 using Oxygen.Config;
 
 namespace Oxygen.Components
@@ -39,11 +37,11 @@ namespace Oxygen.Components
             if(Current == null)
             {
                 Current = GuiManager.Current.m_playerLayer.m_playerStatus.gameObject.AddComponent<AirBar>();
+                Current.Init();
             }
-            Current.OnExpeditionStarted();
         }
         
-        void OnExpeditionStarted()
+        void Init()
         {
             // Instantiate air bar and text
             if (m_airText == null)
@@ -62,8 +60,6 @@ namespace Oxygen.Components
                 m_airTextX = m_airTextLocalization.transform.position.x;
                 m_airTextY = m_airTextLocalization.transform.position.y;
                 m_airTextZ = m_airTextLocalization.transform.position.z;
-                
-                UpdateAirTextPos();
             }
 
             // right air bars
@@ -102,16 +98,12 @@ namespace Oxygen.Components
             // Initialize Bar
             UpdateAirBar(1f);
 
-            // Hide air bar
-            if (AirManager.Current != null)
-                SetVisible(AirManager.Current.AlwaysDisplayAirBar());
-            else
-                SetVisible(false);
+            SetVisible(false);
         }
 
         public void UpdateAirBar(float air)
         {
-            SetAirText(air);
+            SetAirPercentageText(air);
             SetAirBar(m_airBar1, air); 
             SetAirBar(m_airBar2, air);
         }
@@ -124,7 +116,7 @@ namespace Oxygen.Components
         }
 
         // Set air text and color
-        private void SetAirText(float val)
+        private void SetAirPercentageText(float val)
         {
             Color color = Color.Lerp(m_airLow, m_airHigh, val);
 
@@ -134,23 +126,30 @@ namespace Oxygen.Components
             m_airText.color = color;
             m_airText.ForceMeshUpdate(true);
 
-            var AirText = AirManager.Current.AirText();
             m_airTextLocalization.color = color;
-            m_airTextLocalization.text = AirText.Text;
             m_airTextLocalization.ForceMeshUpdate(true);
         }
 
-        public void UpdateAirTextPos()
+        public void UpdateAirText(OxygenBlock config)
         {
-            var AirText = AirManager.Current.AirText();
-            m_airTextLocalization.transform.SetPositionAndRotation(new(m_airTextX + AirText.x, m_airTextY + AirText.y, m_airTextZ), m_airTextLocalization.transform.rotation);
+            if (config == null)
+            {
+                return;
+            }
+
+            string text = config.AirText.Text;
+            float x = config.AirText.x;
+            float y = config.AirText.y;
+
+            m_airTextLocalization.text = text;
+            m_airTextLocalization.transform.SetPositionAndRotation(new(m_airTextX + x, m_airTextY + y, m_airTextZ), m_airTextLocalization.transform.rotation);
         }
 
         // Set visibility of air bar
         public void SetVisible(bool vis)
         {
             m_airText.gameObject.SetActive(vis);
-            //m_airTextLocalization.gameObject.SetActive(vis);
+            m_airTextLocalization.gameObject.SetActive(vis);
             m_air1.gameObject.SetActive(vis);
             m_air2.gameObject.SetActive(vis);
         }

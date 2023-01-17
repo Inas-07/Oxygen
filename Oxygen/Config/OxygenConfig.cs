@@ -6,12 +6,11 @@ using Localization;
 
 namespace Oxygen.Config
 {
-    public struct AirText
+    public class AirText
     {
         public float x { set; get; } = 0f;
         public float y { set; get; } = 0f;
-        public LocalizedText Text { get; set; }
-        public AirText() { }
+        public LocalizedText Text { get; set; } = null;
     }
 
     public class OxygenConfig
@@ -30,7 +29,7 @@ namespace Oxygen.Config
         public float ShatterAmount { get; set; } = 0.0f;
         public float DamageThreshold { get; set; } = 0.1f;
         public bool AlwaysDisplayAirBar { get; set; } = false;
-        public AirText AirText { set; get; }
+        public AirText AirText { set; get; } = null;
         public List<uint> FogSettings { get; set; } = new() { 0U };
     }
 }

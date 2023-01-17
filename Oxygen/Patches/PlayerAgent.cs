@@ -9,6 +9,8 @@ namespace Oxygen.Patches
     {
         public static void Prefix(PlayerAgent __instance, ref EV_ModificationData data)
         {
+            if (!AirManager.Current.HasAirConfig()) return;
+
             if (data.health != 0.0)
             {
                 AirManager.Current.RemoveAir(data.health);
