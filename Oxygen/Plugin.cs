@@ -36,16 +36,17 @@ namespace Oxygen
         {
             ClassInjector.RegisterTypeInIl2Cpp<AirManager>();
             LevelAPI.OnBuildStart += AirManager.Setup;
-            //RundownManager.add_OnExpeditionGameplayStarted((Action) AirManager.Setup);
+            LevelAPI.OnBuildDone += AirManager.OnBuildDone;
+            LevelAPI.OnLevelCleanup += AirManager.OnLevelCleanup;
 
             ClassInjector.RegisterTypeInIl2Cpp<AirBar>();
             LevelAPI.OnBuildStart += AirBar.Setup;
-            //RundownManager.add_OnExpeditionGameplayStarted((Action) AirBar.Setup);
+            LevelAPI.OnLevelCleanup += AirBar.OnLevelCleanup; 
 
             ClassInjector.RegisterTypeInIl2Cpp<AirPlane>();
-            LevelAPI.OnBuildStart += AirPlane.Setup;
-            //RundownManager.add_OnExpeditionGameplayStarted((Action) AirPlane.Setup);
-
+            LevelAPI.OnBuildStart += AirPlane.OnBuildStart;
+            LevelAPI.OnLevelCleanup += AirPlane.OnLevelCleanup;
+            
             var harmony = new Harmony(GUID);
             harmony.PatchAll();
 
@@ -90,7 +91,7 @@ namespace Oxygen
 
                 if (GameStateManager.IsInExpedition)
                 {
-                    AirManager.Current.UpdateAirConfig(AirManager.Current.FogSetting());
+                    AirManager.Current.UpdateAirConfig(AirManager.Current.FogSetting(), true);
                 }
             });
         }

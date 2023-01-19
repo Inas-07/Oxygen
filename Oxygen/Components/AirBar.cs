@@ -43,7 +43,8 @@ namespace Oxygen.Components
         
         void Init()
         {
-            // Instantiate air bar and text
+            // Instantiate air bar and text. 
+            // Only need to instanitiate once.
             if (m_airText == null)
             {
                 m_airText = GuiManager.Current.m_playerLayer.m_playerStatus.m_healthText.gameObject.Instantiate<TextMeshPro>("AirText");
@@ -142,6 +143,7 @@ namespace Oxygen.Components
             float y = config.AirText.y;
 
             m_airTextLocalization.text = text;
+            m_airTextLocalization.ForceMeshUpdate(true);
             m_airTextLocalization.transform.SetPositionAndRotation(new(m_airTextX + x, m_airTextY + y, m_airTextZ), m_airTextLocalization.transform.rotation);
         }
 
@@ -152,6 +154,12 @@ namespace Oxygen.Components
             m_airTextLocalization.gameObject.SetActive(vis);
             m_air1.gameObject.SetActive(vis);
             m_air2.gameObject.SetActive(vis);
+        }
+
+        public static void OnLevelCleanup()
+        {
+            if (Current == null) return;
+            Current.SetVisible(false);
         }
     }
 }

@@ -6,6 +6,8 @@ using LevelGeneration;
 
 namespace Oxygen.Patches
 {
+    // handle on-going fog transition
+    // 
     [HarmonyPatch(typeof(LocalPlayerAgentSettings), nameof(LocalPlayerAgentSettings.UpdateBlendTowardsTargetFogSetting))]
     class LocalPlayerAgentSettings_UpdateBlendTowardsTargetFogSetting
     {
@@ -13,11 +15,7 @@ namespace Oxygen.Patches
         {
             if (!AirManager.Current.HasAirConfig())
             {
-                if (AirPlane.Current.isAirPlaneRegistered)
-                {
-                    EffectVolumeManager.UnregisterVolume((EffectVolume)AirPlane.Current.airPlane);
-                    AirPlane.Current.isAirPlaneRegistered = false;
-                }
+                AirPlane.Current.Unregister();
                 return;
             }
 
@@ -25,7 +23,7 @@ namespace Oxygen.Patches
                 return;
 
             PlayerAgent playerAgent = PlayerManager.GetLocalPlayerAgent();
-            if (playerAgent.FPSCamera == null || playerAgent.FPSCamera.PrelitVolume == null)
+            if (playerAgent.FPSCamera == null /*|| playerAgent.FPSCamera.PrelitVolume == null*/)
                 return;
 
             AirPlane airPlaneCurrent = AirPlane.Current;
@@ -38,6 +36,7 @@ namespace Oxygen.Patches
                 num = dimension.GroundY;
 
             PreLitVolume prelitVolume = playerAgent.FPSCamera.PrelitVolume;
+
             airPlaneCurrent.airPlane.invert = (double)prelitVolume.m_densityHeightMaxBoost > (double)prelitVolume.m_fogDensity;
             airPlaneCurrent.airPlane.contents = eEffectVolumeContents.Health;
             airPlaneCurrent.airPlane.modification = eEffectVolumeModification.Inflict;
@@ -45,11 +44,7 @@ namespace Oxygen.Patches
             airPlaneCurrent.airPlane.lowestAltitude = prelitVolume.m_densityHeightAltitude + num;
             airPlaneCurrent.airPlane.highestAltitude = prelitVolume.m_densityHeightAltitude + prelitVolume.m_densityHeightRange + num;
 
-            if (!AirPlane.Current.isAirPlaneRegistered)
-            {
-                EffectVolumeManager.RegisterVolume((EffectVolume)AirPlane.Current.airPlane);
-                AirPlane.Current.isAirPlaneRegistered = true;
-            }
+            AirPlane.Current.Register();
         }
     }
 }

@@ -1,20 +1,24 @@
 ﻿using HarmonyLib;
 using Oxygen.Components;
+using Player;
 
 
 namespace Oxygen.Patches
 {
-    [HarmonyPatch(typeof(EnvironmentStateManager), nameof(EnvironmentStateManager.AttemptStartFogTransition))]
-    class EnvironmentStateManager_AttemptStartFogTransition
+    [HarmonyPatch(typeof(EnvironmentStateManager), nameof(EnvironmentStateManager.UpdateFog))]
+    class EnvironmentStateManager_UpdateFog
     {
-        public static void Postfix(uint fogDataId)
+        public static void Prefix(EnvironmentStateManager __instance)
         {
             if (AirManager.Current == null) return;
 
-            AirManager.Current.UpdateAirConfig(fogDataId);
-            AirBar.Current.UpdateAirText(AirManager.Current.config);
+            FogState fogState = __instance.m_stateReplicator.State.FogStates[__instance.m_latestKnownLocalDimensionCreationIndex];
 
-            if(AirManager.Current != null && !AirManager.Current.HasAirConfig()) 
+            if (fogState.FogDataID <= 0u) return;
+
+            AirManager.Current.UpdateAirConfig(fogState.FogDataID);
+
+            if(!AirManager.Current.HasAirConfig()) 
             {
                 AirManager.Current.StopInfectionLoop();
             }
