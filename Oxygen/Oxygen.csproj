@@ -5,7 +5,7 @@
         <Platforms>AnyCPU;x64</Platforms>
       <AnalysisLevel>6.0-recommended</AnalysisLevel>
       <LangVersion>latest</LangVersion>
-      <BaseOutputPath>G:\SteamLibrary\steamapps\common\GTFO\BepInEx\plugins</BaseOutputPath>
+      <BaseOutputPath>J:\SteamLibrary\steamapps\common\GTFO\BepInEx\plugins</BaseOutputPath>
     </PropertyGroup>
 
     <Import Project="Dependencies.props" />

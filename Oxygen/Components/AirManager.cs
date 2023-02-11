@@ -98,26 +98,6 @@ namespace Oxygen.Components
             {
                 AirBar.Current.SetVisible(true);
             }
-            
-            //if (airAmount > 0.8f && airAmount <= 1.0f)
-            //{
-            //    m_playerAgent.Breathing.m_currentBreathingIntensity = 0;
-            //}
-            //else if (airAmount > 0.6f)
-            //{
-            //    m_playerAgent.Breathing.m_currentBreathingIntensity = 1;
-            //    PlayerDialogManager.WantToStartDialog(173U, m_playerAgent);
-            //}
-            //else if (airAmount > 0.4f)
-            //{
-            //    m_playerAgent.Breathing.m_currentBreathingIntensity = 2;
-            //    PlayerDialogManager.WantToStartDialog(173U, m_playerAgent);
-            //}
-            //else 
-            //{
-            //    m_playerAgent.Breathing.m_currentBreathingIntensity = 3;
-            //    PlayerDialogManager.WantToStartDialog(173U, m_playerAgent);
-            //}
 
             if (airAmount <= config.DamageThreshold)
             {
@@ -172,7 +152,7 @@ namespace Oxygen.Components
 
             if(damageAmount > health)
             {
-                damageAmount = health - 0.001f; 
+                damageAmount = health > 0.0f ? health - 0.001f : 0.0f; 
             }
 
             Damage.NoAirDamage(damageAmount);

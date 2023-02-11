@@ -11,7 +11,6 @@ namespace Oxygen.Components
         public static AirBar Current = null;
 
         private TextMeshPro m_airText = null; // air percentage %
-
         private TextMeshPro m_airTextLocalization = null;
         private float m_airTextX = 0f;
         private float m_airTextY = 0f;
