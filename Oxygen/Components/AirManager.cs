@@ -28,6 +28,10 @@ namespace Oxygen.Components
         private float damageTick = 0f;
         private float glassShatterAmount = 0f;
         private bool m_isInInfectionLoop = false;
+        private float healthToRegen = 0f;
+        private float healthRegenTick = 0.0f;
+        private float healthRegenDelay = 0.25f;
+        private float tickUntilRegenHealth = 0.0f;
 
         public AirManager(IntPtr value) : base(value) { }
 
@@ -66,8 +70,8 @@ namespace Oxygen.Components
             Current.fogSettingDB = null;
             Current.airAmount = 0f;
             Current.damageTick = 0f;
-            Current.glassShatterAmount= 0f;
-
+            Current.glassShatterAmount = 0f;
+            Current.healthToRegen = 0f;
             Current.m_playerAgent = null;
             Current.m_hudGlass = null;
             Current.Damage = null;
@@ -102,11 +106,19 @@ namespace Oxygen.Components
             if (airAmount <= config.DamageThreshold)
             {
                 damageTick += Time.deltaTime;
+                if (damageTick > config.DamageTime)
+                {
+                    AirDamage();
+                }
             }
 
-            if (damageTick > config.DamageTime)
+            else // airAmount > config.DamageThreshold
             {
-                AirDamage();
+                tickUntilRegenHealth += Time.deltaTime;
+                if (healthRegenTick > healthRegenDelay)
+                {
+                    RegenHealth();
+                }
             }
         }
 
@@ -164,6 +176,34 @@ namespace Oxygen.Components
             }
                 
             damageTick = 0f;
+            tickUntilRegenHealth = 0f;
+            healthToRegen += damageAmount;
+        }
+
+        public void RegenHealth()
+        {
+            if (healthToRegen <= 0.0f) return;
+
+            tickUntilRegenHealth = healthRegenDelay;
+
+            healthRegenTick += Time.deltaTime;
+            if(healthRegenTick > 0.25f) 
+            {
+                float regenAmount = config.DamageAmount;
+                if (regenAmount >= healthToRegen)
+                {
+                    regenAmount = healthToRegen;
+                    healthToRegen = 0.0f;
+                }
+                else
+                {
+                    healthToRegen -= regenAmount;
+                }
+
+                Damage.AddHealth(healthToRegen, m_playerAgent);
+
+                healthRegenTick = 0.0f;
+            }
         }
 
         public void UpdateAirConfig(uint fogsetting, bool LiveEditForceUpdate = false)
