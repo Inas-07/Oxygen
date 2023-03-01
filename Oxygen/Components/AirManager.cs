@@ -107,7 +107,7 @@ namespace Oxygen.Components
             if (damageTick > config.DamageTime)
             {
                 AirDamage();
-            }    
+            }
         }
 
         public void AddAir()
@@ -207,6 +207,7 @@ namespace Oxygen.Components
         public string AirText() => config == null ? null : config.AirText.Text;
 
         public float AirTextX() => config == null ? 0.0f : config.AirText.x;
+
         public float AirTextY() => config == null ? 0.0f : config.AirText.y;
 
         public bool HasAirConfig() => config != null;
