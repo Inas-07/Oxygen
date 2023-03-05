@@ -25,7 +25,7 @@ namespace Oxygen
             MODNAME = "Oxygen",
             AUTHOR = "chasetug",
             GUID = "com." + AUTHOR + "." + MODNAME,
-            VERSION = "1.0.3";
+            VERSION = "1.1.0";
 
         //private static OxygenConfig oxygenConfig;
         public static readonly string OXYGEN_CONFIG_PATH = Path.Combine(MTFO.Managers.ConfigManager.CustomPath, "Oxygen");
@@ -91,6 +91,7 @@ namespace Oxygen
                             lookup.Remove(id);
                         }
                         lookup.Add(id, block);
+                        Utils.Log.Warning($"Replaced OxygenConfig for FogSetting: {id}.");
                     }
                 }
 
