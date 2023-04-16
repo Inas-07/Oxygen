@@ -35,10 +35,8 @@ namespace Oxygen.Components
         private float healthToRegen = 0f;
         private float healthRegenTick = 0.0f;
         
-        private readonly float healthRegenDelay = 3f;
         private float tickUntilHealthRegenHealthStart = 0.0f;
         
-        private readonly float completeHealthRegenInSeconds = 5.0f;
         private readonly float regenHealthTickInterval = 0.25f;
 
         private float healthRegenAmountPerInterval = 0.0f;
@@ -134,13 +132,13 @@ namespace Oxygen.Components
             {
                 tickUntilHealthRegenHealthStart += Time.deltaTime;
 
-                if(tickUntilHealthRegenHealthStart <= healthRegenDelay)
-                    Log.Debug($"Waiting for health regen. Current tick {tickUntilHealthRegenHealthStart}");
-                if (tickUntilHealthRegenHealthStart > healthRegenDelay)
+                //if(tickUntilHealthRegenHealthStart <= healthRegenDelay)
+                //    Log.Debug($"Waiting for health regen. Current tick {tickUntilHealthRegenHealthStart}");
+                if (tickUntilHealthRegenHealthStart > config.TimeToStartHealthRegen)
                 {
                     if(healthRegenAmountPerInterval == 0.0f)
                     {
-                        healthRegenAmountPerInterval = healthToRegen * (regenHealthTickInterval / completeHealthRegenInSeconds);
+                        healthRegenAmountPerInterval = healthToRegen * (regenHealthTickInterval / config.TimeToCompleteHealthRegen);
                     }
 
                     RegenHealth();
@@ -204,21 +202,21 @@ namespace Oxygen.Components
             damageTick = 0f;
             tickUntilHealthRegenHealthStart = 0f;
             healthRegenAmountPerInterval = 0.0f;
-            healthToRegen += damageAmount;
+            healthToRegen += damageAmount * config.HealthRegenProportion;
             CoughLoss += damageAmount;
             if (CoughLoss > CoughPerLoss)
             {
                 PlayerShouldCough = true;
                 CoughLoss = 0.0f;
             }
-            Log.Debug($"AirDamage: healthToRegen {healthToRegen}, reset delay tick");
+            //Log.Debug($"AirDamage: healthToRegen {healthToRegen}, reset delay tick");
         }
 
         public void RegenHealth()
         {
             if (healthToRegen <= 0.0f) return;
 
-            tickUntilHealthRegenHealthStart = healthRegenDelay;
+            tickUntilHealthRegenHealthStart = config.TimeToStartHealthRegen;
 
             healthRegenTick += Time.deltaTime;
             if(healthRegenTick > regenHealthTickInterval) 
@@ -238,7 +236,7 @@ namespace Oxygen.Components
                 }
 
                 Damage.AddHealth(regenAmount, m_playerAgent);
-                Log.Debug($"Regen: amount {regenAmount}");
+                //Log.Debug($"Regen: amount {regenAmount}");
 
                 healthRegenTick = 0.0f;
             }
@@ -281,7 +279,7 @@ namespace Oxygen.Components
             healthRegenTick = 0.0f;
             healthToRegen = 0.0f;
             tickUntilHealthRegenHealthStart = 0.0f;
-            Log.Warning("Reset health to regen");
+            //Log.Warning("Reset health to regen");
         }
 
         public float AirLoss() => config == null ? 0f : config.AirLoss;

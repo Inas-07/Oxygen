@@ -28,7 +28,7 @@ namespace Oxygen.Components
 
             Current.airPlane = new EV_Plane();
             uint fogsetting = RundownManager.ActiveExpedition.Expedition.FogSettings;
-            if (fogsetting != 0u) fogsetting = 21u;
+            if (fogsetting == 0u) fogsetting = 21u;
 
             OxygenBlock config;
 

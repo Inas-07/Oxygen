@@ -23,9 +23,9 @@ namespace Oxygen
     {
         public const string
             MODNAME = "Oxygen",
-            AUTHOR = "chasetug",
-            GUID = "com." + AUTHOR + "." + MODNAME,
-            VERSION = "1.1.0";
+            AUTHOR = "Inas",
+            GUID = AUTHOR + "." + MODNAME,
+            VERSION = "1.1.1";
 
         //private static OxygenConfig oxygenConfig;
         public static readonly string OXYGEN_CONFIG_PATH = Path.Combine(MTFO.Managers.ConfigManager.CustomPath, "Oxygen");

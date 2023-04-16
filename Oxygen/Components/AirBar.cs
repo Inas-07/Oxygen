@@ -143,6 +143,7 @@ namespace Oxygen.Components
 
             m_airTextLocalization.text = text;
             m_airTextLocalization.ForceMeshUpdate(true);
+            CoroutineManager.BlinkIn(m_airTextLocalization.gameObject);
             m_airTextLocalization.transform.SetPositionAndRotation(new(m_airTextX + x, m_airTextY + y, m_airTextZ), m_airTextLocalization.transform.rotation);
         }
 

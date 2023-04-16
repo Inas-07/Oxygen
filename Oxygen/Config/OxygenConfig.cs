@@ -29,6 +29,9 @@ namespace Oxygen.Config
         public float ShatterAmount { get; set; } = 0.0f;
         public float DamageThreshold { get; set; } = 0.1f;
         public bool AlwaysDisplayAirBar { get; set; } = false;
+        public float HealthRegenProportion { get; set; } = 1.0f;
+        public float TimeToStartHealthRegen { get;set; } = 3.0f;
+        public float TimeToCompleteHealthRegen { get; set; } = 5.0f;
         public AirText AirText { set; get; } = null;
         public List<uint> FogSettings { get; set; } = new() { 0U };
     }
