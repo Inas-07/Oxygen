@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿using System;
+using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
@@ -24,7 +25,7 @@ namespace Oxygen
             MODNAME = "Oxygen",
             AUTHOR = "Inas",
             GUID = AUTHOR + "." + MODNAME,
-            VERSION = "1.2.0";
+            VERSION = "1.1.1";
 
         //private static OxygenConfig oxygenConfig;
         public static readonly string OXYGEN_CONFIG_PATH = Path.Combine(MTFO.Managers.ConfigManager.CustomPath, "Oxygen");
@@ -54,9 +55,7 @@ namespace Oxygen
             var harmony = new Harmony(GUID);
             harmony.PatchAll();
 
-            // read oxygen config data
-            foreach (string config_file 
-                in Directory.EnumerateFiles(OXYGEN_CONFIG_PATH, "*.json", SearchOption.AllDirectories))
+            foreach (string config_file in Directory.EnumerateFiles(OXYGEN_CONFIG_PATH, "*.json", SearchOption.AllDirectories))
             {
                 OxygenConfig oxygenConfig;
                 ConfigManager.Load(config_file, out oxygenConfig);
@@ -72,7 +71,6 @@ namespace Oxygen
                 }
             }
 
-            // enable in-game real time editting
             listener = LiveEdit.CreateListener(OXYGEN_CONFIG_PATH, "*.json", includeSubDir: true);
             listener.FileChanged += Listener_FileChanged1;
         }

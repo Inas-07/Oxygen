@@ -36,7 +36,7 @@ namespace Oxygen.Patches
                     __instance.SendSetHealth(__instance.Health);
             }
 
-            __instance.Hitreact(data.damage.Get(__instance.HealthMax), UnityEngine.Vector3.zero, triggerCameraShake: true, triggerGenericDialog: false);
+            __instance.Hitreact(data.damage.Get(__instance.HealthMax), UnityEngine.Vector3.zero, triggerCameraShake: true, triggerGenericDialog: AirManager.Current.HealthToRegen() > 0.0f);
             return false;
         }
 
