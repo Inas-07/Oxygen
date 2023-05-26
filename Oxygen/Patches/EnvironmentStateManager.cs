@@ -11,13 +11,10 @@ namespace Oxygen.Patches
         public static void Prefix(EnvironmentStateManager __instance)
         {
             if (AirManager.Current == null) return;
-
             FogState fogState = __instance.m_stateReplicator.State.FogStates[__instance.m_latestKnownLocalDimensionCreationIndex];
-
-            if (fogState.FogDataID <= 0u) return;
+            if (fogState.FogDataID <= 0u) return; // Fog ID, with 0 denoting invalid ID
 
             AirManager.Current.UpdateAirConfig(fogState.FogDataID);
-
             if(!AirManager.Current.HasAirConfig()) 
             {
                 AirManager.Current.StopInfectionLoop();

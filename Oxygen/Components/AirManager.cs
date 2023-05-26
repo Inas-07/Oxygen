@@ -6,6 +6,7 @@ using GameData;
 using Oxygen.Config;
 using GTFO.API;
 using Oxygen.Utils;
+using Agents;
 
 namespace Oxygen.Components
 {
@@ -18,7 +19,6 @@ namespace Oxygen.Components
 
         // 
         public PlayerAgent m_playerAgent;
-
         private HUDGlassShatter m_hudGlass;
         private Dam_PlayerDamageBase Damage;
 
@@ -65,7 +65,6 @@ namespace Oxygen.Components
             Current.Damage = Current.m_playerAgent.gameObject.GetComponent<Dam_PlayerDamageBase>();
 
             Current.UpdateAirConfig(RundownManager.ActiveExpedition.Expedition.FogSettings);
-            
             AirBar.Current.UpdateAirText(Current.config);
         }
 
@@ -121,9 +120,16 @@ namespace Oxygen.Components
                 damageTick += Time.deltaTime;
                 if (damageTick > config.DamageTime)
                 {
-                    if(Damage.Health > 0.0f && m_playerAgent.Alive)
+                    if(Damage.Health > 0.0f)
                     {
-                        AirDamage();
+                        if(m_playerAgent.Alive)
+                        {
+                            AirDamage();
+                        }
+                        else
+                        {
+                            // TODO: bug fix
+                        }
                     }
                 }
             }
@@ -233,6 +239,7 @@ namespace Oxygen.Components
                 else
                 {
                     healthToRegen -= regenAmount;
+                    Damage.m_nextRegen = Clock.Time + Damage.Owner.PlayerData.healthRegenDelay; // suppress vanilla health regen
                 }
 
                 Damage.AddHealth(regenAmount, m_playerAgent);

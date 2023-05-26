@@ -1,6 +1,4 @@
 ﻿using HarmonyLib;
-using Oxygen.Components;
-using UnityEngine;
 
 namespace Oxygen.Patches
 {
@@ -11,9 +9,9 @@ namespace Oxygen.Patches
         {
             if (__instance.m_infectionShield != null)
             {
-                EffectVolumeManager.UnregisterVolume((EffectVolume) __instance.m_infectionShield);
+                EffectVolumeManager.UnregisterVolume(__instance.m_infectionShield);
                 __instance.m_infectionShield.contents = eEffectVolumeContents.All;
-                EffectVolumeManager.RegisterVolume((EffectVolume) __instance.m_infectionShield);
+                EffectVolumeManager.RegisterVolume(__instance.m_infectionShield);
             }
         }
     }

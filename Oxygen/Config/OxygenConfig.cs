@@ -33,6 +33,8 @@ namespace Oxygen.Config
         public float TimeToStartHealthRegen { get;set; } = 3.0f;
         public float TimeToCompleteHealthRegen { get; set; } = 5.0f;
         public AirText AirText { set; get; } = null;
+
+        // Apply this oxygen setting to the following Fog Setting
         public List<uint> FogSettings { get; set; } = new() { 0U };
     }
 }
