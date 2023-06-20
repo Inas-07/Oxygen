@@ -32,6 +32,7 @@ namespace Oxygen.Components
         private bool m_isInInfectionLoop = false;
 
         // health regen
+        private bool isRegeningHealth = false;
         private float healthToRegen = 0f;
         private float healthRegenTick = 0.0f;
         
@@ -126,6 +127,8 @@ namespace Oxygen.Components
                         AirDamage();
                     }
                 }
+
+                isRegeningHealth = false;
             }
 
             else if(healthToRegen > 0.0f)// airAmount > config.DamageThreshold
@@ -142,7 +145,18 @@ namespace Oxygen.Components
                     }
 
                     RegenHealth();
+
+                    if(isRegeningHealth == false)
+                    {
+                        Damage.m_nextRegen = Clock.Time + config.TimeToStartHealthRegen + config.TimeToCompleteHealthRegen;
+                        isRegeningHealth = true;
+                    }
                 }
+            }
+
+            else
+            {
+                isRegeningHealth = false;
             }
         }
 
@@ -229,6 +243,7 @@ namespace Oxygen.Components
                     healthToRegen = 0.0f;
                     tickUntilHealthRegenHealthStart = 0.0f;
                     healthRegenAmountPerInterval = 0.0f;
+                    isRegeningHealth = false;
                 }
                 else
                 {

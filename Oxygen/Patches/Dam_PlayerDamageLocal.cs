@@ -31,9 +31,13 @@ namespace Oxygen.Patches
             {
                 bool flag = __instance.RegisterDamage(damage);
                 if (flag)
-                    __instance.SendSetDead();
+                {
+                    //__instance.SendSetDead();
+                }
                 else
+                {
                     __instance.SendSetHealth(__instance.Health);
+                }
             }
 
             __instance.Hitreact(data.damage.Get(__instance.HealthMax), UnityEngine.Vector3.zero, triggerCameraShake: true, triggerGenericDialog: false);
