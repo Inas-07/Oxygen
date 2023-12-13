@@ -49,12 +49,10 @@ namespace Oxygen.Components
 
         public AirManager(IntPtr value) : base(value) { }
 
-        public static void Setup()
+        public static void Setup(PlayerAgent playerAgent)
         {
-            if (Current == null)
-            {
-                Current = PlayerManager.Current.m_localPlayerAgentInLevel.gameObject.AddComponent<AirManager>();
-            }
+            Current = playerAgent.gameObject.AddComponent<AirManager>();
+            //Current = PlayerManager.Current.m_localPlayerAgentInLevel.gameObject.AddComponent<AirManager>();
         }
 
         public static void OnBuildDone()
@@ -122,7 +120,7 @@ namespace Oxygen.Components
                 damageTick += Time.deltaTime;
                 if (damageTick > config.DamageTime)
                 {
-                    if(Damage.Health > 0.0f && m_playerAgent.Alive)
+                    if(m_playerAgent.Alive)
                     {
                         AirDamage();
                     }
@@ -199,11 +197,13 @@ namespace Oxygen.Components
             float health = Damage.Health;
 
             float damageAmount = config.DamageAmount;
+            Damage.m_nextRegen = Clock.Time + config.TimeToStartHealthRegen; // TODO: test this
 
-            if(damageAmount > health)
-            {
-                damageAmount = health > 0.0f ? health - 0.001f : 0.0f; 
-            }
+            if (health <= 1.0f) return; // 4% health in game
+            //if(damageAmount > health)
+            //{
+            //    damageAmount = health > 0.0f ? health - 0.001f : 0.0f; 
+            //}
 
             Damage.NoAirDamage(damageAmount);
 

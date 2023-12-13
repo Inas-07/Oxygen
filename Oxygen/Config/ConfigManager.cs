@@ -13,12 +13,18 @@ namespace Oxygen.Config
         {
             AllowTrailingCommas = true,
             ReadCommentHandling = JsonCommentHandling.Skip,
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
+            WriteIndented = true
         };
 
         public static T Deserialize<T>(string json)
         {
             return JsonSerializer.Deserialize<T>(json, s_SerializerOptions);
+        }
+
+        public static string Serialize<T>(T value)
+        {
+            return JsonSerializer.Serialize(value, s_SerializerOptions);
         }
 
         static ConfigManager()

@@ -25,7 +25,7 @@ namespace Oxygen
             MODNAME = "Oxygen",
             AUTHOR = "Inas",
             GUID = AUTHOR + "." + MODNAME,
-            VERSION = "1.2.0";
+            VERSION = "1.3.2";
 
         //private static OxygenConfig oxygenConfig;
         public static readonly string OXYGEN_CONFIG_PATH = Path.Combine(MTFO.Managers.ConfigManager.CustomPath, "Oxygen");
@@ -36,11 +36,15 @@ namespace Oxygen
         {
             if (!Directory.Exists(OXYGEN_CONFIG_PATH))
             {
-                Utils.Log.Error("Did not find oxygen config folder, will not load.");
-                return;
+                Directory.CreateDirectory(OXYGEN_CONFIG_PATH);
+                var file = File.CreateText(Path.Combine(OXYGEN_CONFIG_PATH, "Template.json"));
+                file.WriteLine(ConfigManager.Serialize(new OxygenConfig()));
+                file.Flush();
+                file.Close();
             }
+
             ClassInjector.RegisterTypeInIl2Cpp<AirManager>();
-            LevelAPI.OnBuildStart += AirManager.Setup;
+            //LevelAPI.OnBuildStart += AirManager.Setup;
             LevelAPI.OnBuildDone += AirManager.OnBuildDone;
             LevelAPI.OnLevelCleanup += AirManager.OnLevelCleanup;
 

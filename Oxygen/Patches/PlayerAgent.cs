@@ -4,10 +4,12 @@ using Player;
 
 namespace Oxygen.Patches
 {
-    [HarmonyPatch(typeof(PlayerAgent), nameof(PlayerAgent.ReceiveModification))]
-    class PlayerAgent_ReceiveModification
+    [HarmonyPatch]
+    class Patch_PlayerAgent
     {
-        public static void Prefix(PlayerAgent __instance, ref EV_ModificationData data)
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(PlayerAgent), nameof(PlayerAgent.ReceiveModification))]
+        public static void ReceiveModification(PlayerAgent __instance, ref EV_ModificationData data)
         {
             if (!AirManager.Current.HasAirConfig()) return;
 
@@ -22,6 +24,16 @@ namespace Oxygen.Patches
             
             // Prevent not implemented error
             data.health = 0.0f;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyWrapSafe]
+        [HarmonyPatch(typeof(PlayerAgent), nameof(PlayerAgent.Setup))]
+        internal static void Post_Setup(PlayerAgent __instance)
+        {
+            if (!__instance.IsLocallyOwned)
+                return;
+            AirManager.Setup(__instance);
         }
     }
 }
