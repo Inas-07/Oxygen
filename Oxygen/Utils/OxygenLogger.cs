@@ -2,9 +2,9 @@
 
 namespace Oxygen.Utils
 {
-    static class Log
+    static class OxygenLogger
     {
-        static Log() { }
+        static OxygenLogger() { }
 
         private static ManualLogSource source = Logger.CreateLogSource(Plugin.MODNAME);
         public static void Debug(object msg) => source.LogDebug(msg);

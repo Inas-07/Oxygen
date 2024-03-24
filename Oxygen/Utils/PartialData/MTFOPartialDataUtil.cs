@@ -67,7 +67,7 @@ namespace Oxygen.Utils.PartialData
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"Exception thrown while reading data from MTFO_Extension_PartialData:\n{e}");
+                    OxygenLogger.Error($"Exception thrown while reading data from MTFO_Extension_PartialData:\n{e}");
                 }
             }
         }

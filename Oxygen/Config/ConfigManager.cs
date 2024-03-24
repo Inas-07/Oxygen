@@ -35,7 +35,7 @@ namespace Oxygen.Config
             {
                 s_SerializerOptions.Converters.Add(MTFOPartialDataUtil.PersistentIDConverter);
                 s_SerializerOptions.Converters.Add(MTFOPartialDataUtil.LocalizedTextConverter);
-                Log.Message("PartialData Support Found!");
+                OxygenLogger.Message("PartialData Support Found!");
             }
             else
             {

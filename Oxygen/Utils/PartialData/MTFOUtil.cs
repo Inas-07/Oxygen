@@ -55,7 +55,7 @@ namespace Oxygen.Utils.PartialData
             }
             catch (Exception e)
             {
-                Log.Error($"Exception thrown while reading path from DataDumper (MTFO): \n{e}");
+                OxygenLogger.Error($"Exception thrown while reading path from DataDumper (MTFO): \n{e}");
             }
         }
     }

@@ -25,7 +25,7 @@ namespace Oxygen
             MODNAME = "Oxygen",
             AUTHOR = "Inas",
             GUID = AUTHOR + "." + MODNAME,
-            VERSION = "1.3.2";
+            VERSION = "1.3.3";
 
         //private static OxygenConfig oxygenConfig;
         public static readonly string OXYGEN_CONFIG_PATH = Path.Combine(MTFO.Managers.ConfigManager.CustomPath, "Oxygen");
@@ -81,7 +81,7 @@ namespace Oxygen
 
         private static void Listener_FileChanged1(LiveEditEventArgs e)
         {
-            Utils.Log.Warning($"LiveEdit File Changed: {e.FullPath}.");
+            Utils.OxygenLogger.Warning($"LiveEdit File Changed: {e.FullPath}.");
 
             LiveEdit.TryReadFileContent(e.FullPath, (content) =>
             {
@@ -95,7 +95,7 @@ namespace Oxygen
                             lookup.Remove(id);
                         }
                         lookup.Add(id, block);
-                        Utils.Log.Warning($"Replaced OxygenConfig for FogSetting: {id}.");
+                        Utils.OxygenLogger.Warning($"Replaced OxygenConfig for FogSetting: {id}.");
                     }
                 }
 
