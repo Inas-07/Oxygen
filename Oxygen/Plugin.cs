@@ -45,7 +45,7 @@ namespace Oxygen
 
             ClassInjector.RegisterTypeInIl2Cpp<AirManager>();
             //LevelAPI.OnBuildStart += AirManager.Setup;
-            LevelAPI.OnBuildDone += AirManager.OnBuildDone;
+            //LevelAPI.OnBuildDone += AirManager.OnBuildDone;
             LevelAPI.OnLevelCleanup += AirManager.OnLevelCleanup;
 
             ClassInjector.RegisterTypeInIl2Cpp<AirBar>();

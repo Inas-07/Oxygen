@@ -23,7 +23,7 @@ namespace Oxygen.Components
         private Dam_PlayerDamageBase Damage;
 
         // air config
-        public OxygenBlock config = null;
+        public OxygenBlock Config { get; private set; } = null;
         private uint fogSetting = 0u;
         private FogSettingsDataBlock fogSettingDB = null;
         private float airAmount = 1f;
@@ -51,22 +51,39 @@ namespace Oxygen.Components
 
         public static void Setup(PlayerAgent playerAgent)
         {
-            Current = playerAgent.gameObject.AddComponent<AirManager>();
-            //Current = PlayerManager.Current.m_localPlayerAgentInLevel.gameObject.AddComponent<AirManager>();
+            if (Current == null)
+            {
+                try
+                {
+                    Current = playerAgent.gameObject.AddComponent<AirManager>();
+                    Current.m_playerAgent = PlayerManager.GetLocalPlayerAgent();
+                    Current.m_hudGlass = Current.m_playerAgent.FPSCamera.GetComponent<HUDGlassShatter>();
+                    Current.Damage = Current.m_playerAgent.gameObject.GetComponent<Dam_PlayerDamageBase>();
+
+                    Current.UpdateAirConfig(RundownManager.ActiveExpedition.Expedition.FogSettings);
+
+                    AirBar.Current.UpdateAirText(Current.Config);
+                }
+                catch
+                {
+                    Current = null;
+                }
+            }
+
         }
 
-        public static void OnBuildDone()
-        {
-            if (Current == null) return;
+        //public static void OnBuildDone()
+        //{
+        //    if (Current == null) return;
 
-            Current.m_playerAgent = PlayerManager.GetLocalPlayerAgent();
-            Current.m_hudGlass = Current.m_playerAgent.FPSCamera.GetComponent<HUDGlassShatter>();
-            Current.Damage = Current.m_playerAgent.gameObject.GetComponent<Dam_PlayerDamageBase>();
+        //    Current.m_playerAgent = PlayerManager.GetLocalPlayerAgent();
+        //    Current.m_hudGlass = Current.m_playerAgent.FPSCamera.GetComponent<HUDGlassShatter>();
+        //    Current.Damage = Current.m_playerAgent.gameObject.GetComponent<Dam_PlayerDamageBase>();
 
-            Current.UpdateAirConfig(RundownManager.ActiveExpedition.Expedition.FogSettings);
+        //    Current.UpdateAirConfig(RundownManager.ActiveExpedition.Expedition.FogSettings);
             
-            AirBar.Current.UpdateAirText(Current.config);
-        }
+        //    AirBar.Current.UpdateAirText(Current.config);
+        //}
 
         public static void OnLevelCleanup()
         {
@@ -77,7 +94,7 @@ namespace Oxygen.Components
                 Current.StopInfectionLoop();
             }
 
-            Current.config = null;
+            Current.Config = null;
             Current.fogSetting = 0u;
             Current.fogSettingDB = null;
             Current.airAmount = 0f;
@@ -101,7 +118,7 @@ namespace Oxygen.Components
             // Breathing intensity, Coughing, and Damage Tick
             if (airAmount == 1f)
             {
-                if(config.AlwaysDisplayAirBar)
+                if(Config.AlwaysDisplayAirBar)
                 {
                     AirBar.Current.SetVisible(true);
                 }
@@ -115,10 +132,10 @@ namespace Oxygen.Components
                 AirBar.Current.SetVisible(true);
             }
 
-            if (airAmount <= config.DamageThreshold)
+            if (airAmount <= Config.DamageThreshold)
             {
                 damageTick += Time.deltaTime;
-                if (damageTick > config.DamageTime)
+                if (damageTick > Config.DamageTime)
                 {
                     if(m_playerAgent.Alive)
                     {
@@ -135,18 +152,18 @@ namespace Oxygen.Components
 
                 //if(tickUntilHealthRegenHealthStart <= healthRegenDelay)
                 //    Log.Debug($"Waiting for health regen. Current tick {tickUntilHealthRegenHealthStart}");
-                if (tickUntilHealthRegenHealthStart > config.TimeToStartHealthRegen)
+                if (tickUntilHealthRegenHealthStart > Config.TimeToStartHealthRegen)
                 {
                     if(healthRegenAmountPerInterval == 0.0f)
                     {
-                        healthRegenAmountPerInterval = healthToRegen * (regenHealthTickInterval / config.TimeToCompleteHealthRegen);
+                        healthRegenAmountPerInterval = healthToRegen * (regenHealthTickInterval / Config.TimeToCompleteHealthRegen);
                     }
 
                     RegenHealth();
 
                     if(isRegeningHealth == false)
                     {
-                        Damage.m_nextRegen = Clock.Time + config.TimeToStartHealthRegen + config.TimeToCompleteHealthRegen;
+                        Damage.m_nextRegen = Clock.Time + Config.TimeToStartHealthRegen + Config.TimeToCompleteHealthRegen;
                         isRegeningHealth = true;
                     }
                 }
@@ -162,7 +179,7 @@ namespace Oxygen.Components
         {
             if (!HasAirConfig()) return;
 
-            float amount = this.config.AirGain;
+            float amount = this.Config.AirGain;
             airAmount = Mathf.Clamp01(airAmount + amount);
             AirBar.Current.UpdateAirBar(airAmount);
 
@@ -180,7 +197,7 @@ namespace Oxygen.Components
             //airAmount = Mathf.Clamp01(airAmount - amount);
             // `amount` doesn't update when using LiveEdit 
             // so I changed to config.amount
-            amount = this.config.AirLoss;
+            amount = this.Config.AirLoss;
 
             airAmount = Mathf.Clamp01(airAmount - amount);
             AirBar.Current.UpdateAirBar(airAmount);
@@ -196,8 +213,8 @@ namespace Oxygen.Components
         {
             float health = Damage.Health;
 
-            float damageAmount = config.DamageAmount;
-            Damage.m_nextRegen = Clock.Time + config.TimeToStartHealthRegen; // TODO: test this
+            float damageAmount = Config.DamageAmount;
+            Damage.m_nextRegen = Clock.Time + Config.TimeToStartHealthRegen; // TODO: test this
 
             if (health <= 1.0f) return; // 4% health in game
             //if(damageAmount > health)
@@ -207,16 +224,16 @@ namespace Oxygen.Components
 
             Damage.NoAirDamage(damageAmount);
 
-            if (config.ShatterGlass)
+            if (Config.ShatterGlass)
             {
-                glassShatterAmount += config.ShatterAmount;
+                glassShatterAmount += Config.ShatterAmount;
                 m_hudGlass.SetGlassShatterProgression(glassShatterAmount); 
             }
                 
             damageTick = 0f;
             tickUntilHealthRegenHealthStart = 0f;
             healthRegenAmountPerInterval = 0.0f;
-            healthToRegen += damageAmount * config.HealthRegenProportion;
+            healthToRegen += damageAmount * Config.HealthRegenProportion;
             CoughLoss += damageAmount;
             if (CoughLoss > CoughPerLoss)
             {
@@ -230,7 +247,7 @@ namespace Oxygen.Components
         {
             if (healthToRegen <= 0.0f) return;
 
-            tickUntilHealthRegenHealthStart = config.TimeToStartHealthRegen;
+            tickUntilHealthRegenHealthStart = Config.TimeToStartHealthRegen;
 
             healthRegenTick += Time.deltaTime;
             if(healthRegenTick > regenHealthTickInterval) 
@@ -268,15 +285,15 @@ namespace Oxygen.Components
 
             if (Plugin.lookup.ContainsKey(fogsetting))
             {
-                this.config = Plugin.lookup[fogsetting];
+                this.Config = Plugin.lookup[fogsetting];
             }
             else if (Plugin.lookup.ContainsKey(0U))
             {
-                this.config = Plugin.lookup[0U];
+                this.Config = Plugin.lookup[0U];
             }
             else
             {
-                this.config = null;
+                this.Config = null;
                 airAmount = 1.0f; // no air config. reset air amount
             }
 
@@ -285,7 +302,7 @@ namespace Oxygen.Components
         
             if(GameStateManager.IsInExpedition)
             {
-                AirBar.Current.UpdateAirText(config);
+                AirBar.Current.UpdateAirText(Config);
             }
         }
 
@@ -297,21 +314,21 @@ namespace Oxygen.Components
             //Log.Warning("Reset health to regen");
         }
 
-        public float AirLoss() => config == null ? 0f : config.AirLoss;
+        public float AirLoss() => Config == null ? 0f : Config.AirLoss;
 
-        public bool AlwaysDisplayAirBar() => config == null ? false : config.AlwaysDisplayAirBar;
+        public bool AlwaysDisplayAirBar() => Config == null ? false : Config.AlwaysDisplayAirBar;
 
         public uint FogSetting() => fogSetting;
 
         public float HealthToRegen() => healthToRegen;
 
-        public string AirText() => config == null ? null : config.AirText.Text;
+        public string AirText() => Config == null ? null : Config.AirText.Text;
 
-        public float AirTextX() => config == null ? 0.0f : config.AirText.x;
+        public float AirTextX() => Config == null ? 0.0f : Config.AirText.x;
 
-        public float AirTextY() => config == null ? 0.0f : config.AirText.y;
+        public float AirTextY() => Config == null ? 0.0f : Config.AirText.y;
 
-        public bool HasAirConfig() => config != null;
+        public bool HasAirConfig() => Config != null;
 
         public void StartInfectionLoop()
         {

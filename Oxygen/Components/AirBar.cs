@@ -35,8 +35,15 @@ namespace Oxygen.Components
         {
             if(Current == null)
             {
-                Current = GuiManager.Current.m_playerLayer.m_playerStatus.gameObject.AddComponent<AirBar>();
-                Current.Init();
+                try
+                {
+                    Current = GuiManager.Current.m_playerLayer.m_playerStatus.gameObject.AddComponent<AirBar>();
+                    Current.Init();
+                }
+                catch
+                {
+                    Current = null;
+                }
             }
         }
         
@@ -137,11 +144,11 @@ namespace Oxygen.Components
                 return;
             }
 
-            string text = config.AirText.Text;
+            string text = config.AirText?.Text ?? string.Empty;
             float x = config.AirText.x;
             float y = config.AirText.y;
 
-            m_airTextLocalization.text = text;
+            m_airTextLocalization.text = text; 
             m_airTextLocalization.ForceMeshUpdate(true);
             CoroutineManager.BlinkIn(m_airTextLocalization.gameObject);
             m_airTextLocalization.transform.SetPositionAndRotation(new(m_airTextX + x, m_airTextY + y, m_airTextZ), m_airTextLocalization.transform.rotation);
