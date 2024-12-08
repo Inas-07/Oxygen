@@ -25,7 +25,7 @@ namespace Oxygen
             MODNAME = "Oxygen",
             AUTHOR = "Inas",
             GUID = AUTHOR + "." + MODNAME,
-            VERSION = "1.3.3";
+            VERSION = "1.3.5";
 
         //private static OxygenConfig oxygenConfig;
         public static readonly string OXYGEN_CONFIG_PATH = Path.Combine(MTFO.Managers.ConfigManager.CustomPath, "Oxygen");
@@ -43,19 +43,9 @@ namespace Oxygen
                 file.Close();
             }
 
-            ClassInjector.RegisterTypeInIl2Cpp<AirManager>();
-            //LevelAPI.OnBuildStart += AirManager.Setup;
-            //LevelAPI.OnBuildDone += AirManager.OnBuildDone;
-            LevelAPI.OnLevelCleanup += AirManager.OnLevelCleanup;
-
-            ClassInjector.RegisterTypeInIl2Cpp<AirBar>();
             LevelAPI.OnBuildStart += AirBar.Setup;
-            LevelAPI.OnLevelCleanup += AirBar.OnLevelCleanup; 
+            LevelAPI.OnBuildStart += AirPlane.Setup;
 
-            ClassInjector.RegisterTypeInIl2Cpp<AirPlane>();
-            LevelAPI.OnBuildStart += AirPlane.OnBuildStart;
-            LevelAPI.OnLevelCleanup += AirPlane.OnLevelCleanup;
-            
             var harmony = new Harmony(GUID);
             harmony.PatchAll();
 
@@ -101,7 +91,7 @@ namespace Oxygen
 
                 if (GameStateManager.IsInExpedition)
                 {
-                    AirManager.Current.UpdateAirConfig(AirManager.Current.FogSetting(), true);
+                    AirManager.Current.UpdateAirConfig(AirManager.Current.FogSetting, true);
                 }
             });
         }

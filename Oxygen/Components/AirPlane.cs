@@ -2,6 +2,9 @@
 using System;
 using Oxygen.Config;
 using GameData;
+using System.Numerics;
+using GTFO.API;
+using Il2CppInterop.Runtime.Injection;
 
 namespace Oxygen.Components
 {
@@ -11,22 +14,33 @@ namespace Oxygen.Components
     // Feel free to screw up
     public class AirPlane : MonoBehaviour
     {
-        public static AirPlane Current = null;
         public EV_Plane airPlane = null;
         private bool isAirPlaneRegistered = false;
 
-        public AirPlane(IntPtr value) : base(value)
-        {
-        }
-        
-        public static void OnBuildStart() // init air plane
-        {
-            if(Current == null)
-            {
-                Current = LocalPlayerAgentSettings.Current.gameObject.AddComponent<AirPlane>();
-            }
+        public AirPlane(IntPtr value) : base(value) { }
 
-            Current.airPlane = new EV_Plane();
+        public static void Setup()
+        {
+            var plane = Current;
+            if (plane != null) return;
+
+            plane = LocalPlayerAgentSettings.Current?.gameObject.AddComponent<AirPlane>();
+
+            if (plane == null) return;
+
+            LevelAPI.OnEnterLevel += plane.SetupAirPlane;
+            LevelAPI.OnLevelCleanup += plane.OnLevelCleanup;
+            LevelAPI.OnBuildStart += plane.OnLevelCleanup;
+
+            if(GameStateManager.CurrentStateName == eGameStateName.ExpeditionFail) // checkpoint restore
+            {
+                plane.SetupAirPlane();
+            }
+        }
+
+        internal void SetupAirPlane()
+        {
+            airPlane = new EV_Plane();
             uint fogsetting = RundownManager.ActiveExpedition.Expedition.FogSettings;
             if (fogsetting == 0u) fogsetting = 21u;
 
@@ -47,26 +61,34 @@ namespace Oxygen.Components
 
             FogSettingsDataBlock fogSettings = GameDataBlockBase<FogSettingsDataBlock>.GetBlock(fogsetting);
 
-            Current.airPlane.invert = fogSettings.DensityHeightMaxBoost > fogSettings.FogDensity;
-            Current.airPlane.contents = eEffectVolumeContents.Health;
-            Current.airPlane.modification = eEffectVolumeModification.Inflict;
-            Current.airPlane.lowestAltitude = fogSettings.DensityHeightAltitude;
-            Current.airPlane.highestAltitude = fogSettings.DensityHeightAltitude + fogSettings.DensityHeightRange;
+            airPlane.invert = fogSettings.DensityHeightMaxBoost > fogSettings.FogDensity;
+            airPlane.contents = eEffectVolumeContents.Health;
+            airPlane.modification = eEffectVolumeModification.Inflict;
+            airPlane.lowestAltitude = fogSettings.DensityHeightAltitude;
+            airPlane.highestAltitude = fogSettings.DensityHeightAltitude + fogSettings.DensityHeightRange;
 
             if (config != null)
             {
-                Current.airPlane.modificationScale = config.AirLoss;
-                Current.Register();
+                airPlane.modificationScale = config.AirLoss;
+                Register();
             }
         }
 
-        public static void OnLevelCleanup()
-        {
-            if (Current == null) return;
 
-            Current.Unregister();
-            Current.isAirPlaneRegistered = false;
-            Current.airPlane = null;
+        private void OnDestroy()
+        {
+            OnLevelCleanup();
+
+            LevelAPI.OnEnterLevel -= SetupAirPlane;
+            LevelAPI.OnLevelCleanup -= OnLevelCleanup;
+            LevelAPI.OnBuildStart -= OnLevelCleanup;
+        }
+
+
+        private void OnLevelCleanup()
+        {
+            Unregister();
+            isAirPlaneRegistered = false;
         }
 
 
@@ -78,12 +100,21 @@ namespace Oxygen.Components
             isAirPlaneRegistered = true;
         }
 
+
         public void Unregister()
         {
             if (airPlane == null || !isAirPlaneRegistered) return;
 
             EffectVolumeManager.UnregisterVolume(airPlane);
             isAirPlaneRegistered = false;
+        }
+
+
+        public static AirPlane? Current => LocalPlayerAgentSettings.Current?.gameObject.GetComponent<AirPlane>() ?? null;
+    
+        static AirPlane()
+        {
+            ClassInjector.RegisterTypeInIl2Cpp<AirPlane>();
         }
     }
 }

@@ -6,6 +6,9 @@ using GameData;
 using Oxygen.Config;
 using GTFO.API;
 using Oxygen.Utils;
+using static GameData.GD;
+using SNetwork;
+using Il2CppInterop.Runtime.Injection;
 
 namespace Oxygen.Components
 {
@@ -14,9 +17,6 @@ namespace Oxygen.Components
     // Controls air bar
     public class AirManager : MonoBehaviour
     {
-        public static AirManager Current = null;
-
-        // 
         public PlayerAgent m_playerAgent;
 
         private HUDGlassShatter m_hudGlass;
@@ -46,70 +46,65 @@ namespace Oxygen.Components
         private readonly float CoughPerLoss = 0.1f;
         private float CoughLoss = 0.0f;
 
-
         public AirManager(IntPtr value) : base(value) { }
 
-        public static void Setup(PlayerAgent playerAgent)
+        internal void Setup()
         {
-            if (Current == null)
+            m_playerAgent = gameObject.GetComponent<PlayerAgent>();
+
+            LevelAPI.OnBuildDone += SetupAirManager;
+            LevelAPI.OnEnterLevel += SetupAirManager;
+            LevelAPI.OnBuildStart += Clear;
+            LevelAPI.OnLevelCleanup += Clear;
+
+            OxygenLogger.Warning($"GameState: {GameStateManager.CurrentStateName}");
+            if (GameStateManager.CurrentStateName == eGameStateName.ExpeditionFail) // checkpoint reload
             {
-                try
-                {
-                    Current = playerAgent.gameObject.AddComponent<AirManager>();
-                    Current.m_playerAgent = PlayerManager.GetLocalPlayerAgent();
-                    Current.m_hudGlass = Current.m_playerAgent.FPSCamera.GetComponent<HUDGlassShatter>();
-                    Current.Damage = Current.m_playerAgent.gameObject.GetComponent<Dam_PlayerDamageBase>();
-
-                    Current.UpdateAirConfig(RundownManager.ActiveExpedition.Expedition.FogSettings);
-
-                    AirBar.Current.UpdateAirText(Current.Config);
-                }
-                catch
-                {
-                    Current = null;
-                }
+                SetupAirManager();
+                AirBar.Setup();
+                AirPlane.Setup();
             }
+        }
+        
+        internal void SetupAirManager()
+        {
+            m_hudGlass = m_playerAgent.FPSCamera.GetComponent<HUDGlassShatter>();
+            Damage = m_playerAgent.gameObject.GetComponent<Dam_PlayerDamageBase>();
 
+            UpdateAirConfig(RundownManager.ActiveExpedition.Expedition.FogSettings);
         }
 
-        //public static void OnBuildDone()
-        //{
-        //    if (Current == null) return;
-
-        //    Current.m_playerAgent = PlayerManager.GetLocalPlayerAgent();
-        //    Current.m_hudGlass = Current.m_playerAgent.FPSCamera.GetComponent<HUDGlassShatter>();
-        //    Current.Damage = Current.m_playerAgent.gameObject.GetComponent<Dam_PlayerDamageBase>();
-
-        //    Current.UpdateAirConfig(RundownManager.ActiveExpedition.Expedition.FogSettings);
-            
-        //    AirBar.Current.UpdateAirText(Current.config);
-        //}
-
-        public static void OnLevelCleanup()
+        private void OnDestroy()
         {
-            if (Current == null) return;
-
-            if (Current.m_isInInfectionLoop)
-            {
-                Current.StopInfectionLoop();
-            }
-
-            Current.Config = null;
-            Current.fogSetting = 0u;
-            Current.fogSettingDB = null;
-            Current.airAmount = 0f;
-            Current.damageTick = 0f;
-            Current.glassShatterAmount = 0f;
-            Current.healthToRegen = 0f;
-            Current.m_playerAgent = null;
-            Current.m_hudGlass = null;
-            Current.Damage = null;
+            Clear();
+            LevelAPI.OnBuildDone -= SetupAirManager;
+            LevelAPI.OnBuildStart -= Clear;
+            LevelAPI.OnLevelCleanup -= Clear;
         }
 
-        void Update()
+
+        internal void Clear()
+        {
+            if (m_isInInfectionLoop)
+            {
+                StopInfectionLoop();
+            }
+
+            Config = null;
+            fogSetting = 0u;
+            fogSettingDB = null;
+            airAmount = 1f;
+            damageTick = 0f;
+            glassShatterAmount = 0f;
+            healthToRegen = 0f;
+            m_hudGlass = null;
+            Damage = null;
+        }
+
+        private void Update()
         {
             if (!RundownManager.ExpeditionIsStarted) return;
-            if (!HasAirConfig())
+            if (!HasConfig)
             {
                 AirBar.Current.SetVisible(false);
                 return;
@@ -177,22 +172,26 @@ namespace Oxygen.Components
 
         public void AddAir()
         {
-            if (!HasAirConfig()) return;
+            if (!HasConfig) return;
 
             float amount = this.Config.AirGain;
             airAmount = Mathf.Clamp01(airAmount + amount);
             AirBar.Current.UpdateAirBar(airAmount);
 
             // If fogSettingDB.Infection > 0, infection effect sound plays via vanilla code.
-            if (this.fogSettingDB.Infection <= 0.0f && this.m_isInInfectionLoop)
+            var fogsetting = FogSettingDB;
+            if (fogsetting != null)
             {
-                StopInfectionLoop();
+                if (fogsetting.Infection <= 0.0f && this.m_isInInfectionLoop)
+                {
+                    StopInfectionLoop();
+                }
             }
         }
 
         public void RemoveAir(float amount) 
         {
-            if (!HasAirConfig()) return;
+            if (!HasConfig) return;
 
             //airAmount = Mathf.Clamp01(airAmount - amount);
             // `amount` doesn't update when using LiveEdit 
@@ -200,16 +199,20 @@ namespace Oxygen.Components
             amount = this.Config.AirLoss;
 
             airAmount = Mathf.Clamp01(airAmount - amount);
-            AirBar.Current.UpdateAirBar(airAmount);
+            AirBar.Current?.UpdateAirBar(airAmount);
 
             // If fogSettingDB.Infection > 0, infection effect sound plays via vanilla code.
-            if (this.fogSettingDB.Infection <= 0.0f && amount > 0.0f)
+            var fogsetting = FogSettingDB;
+            if (fogsetting != null)
             {
-                StartInfectionLoop();
+                if (fogsetting.Infection <= 0.0f && amount > 0.0f)
+                {
+                    StartInfectionLoop();
+                }
             }
         }
 
-        public void AirDamage()
+        internal void AirDamage()
         {
             float health = Damage.Health;
 
@@ -243,7 +246,7 @@ namespace Oxygen.Components
             //Log.Debug($"AirDamage: healthToRegen {healthToRegen}, reset delay tick");
         }
 
-        public void RegenHealth()
+        internal void RegenHealth()
         {
             if (healthToRegen <= 0.0f) return;
 
@@ -300,13 +303,13 @@ namespace Oxygen.Components
             this.fogSetting = fogsetting;
             this.fogSettingDB = FogSettingsDataBlock.GetBlock(fogsetting);
         
-            if(GameStateManager.IsInExpedition)
-            {
+            //if(GameStateManager.IsInExpedition)
+            //{
                 AirBar.Current.UpdateAirText(Config);
-            }
+            //}
         }
 
-        public void ResetHealthToRegen()
+        internal void ResetHealthToRegen()
         {
             healthRegenTick = 0.0f;
             healthToRegen = 0.0f;
@@ -314,11 +317,27 @@ namespace Oxygen.Components
             //Log.Warning("Reset health to regen");
         }
 
+        public uint FogSetting
+        {
+            get { 
+                int i = EnvironmentStateManager.Current.m_latestKnownLocalDimensionCreationIndex;
+                if (i < 0 || i >= EnvironmentStateManager.Current.m_stateReplicator.State.FogStates.Count) return 0;
+                return EnvironmentStateManager.Current.m_stateReplicator.State.FogStates[i].FogDataID;
+            }
+        }
+
+        public FogSettingsDataBlock? FogSettingDB
+        {
+            get
+            {
+                if (FogSetting == 0) return null;
+                return GameDataBlockBase<FogSettingsDataBlock>.GetBlock(FogSetting);
+            }
+        }
+
         public float AirLoss() => Config == null ? 0f : Config.AirLoss;
 
         public bool AlwaysDisplayAirBar() => Config == null ? false : Config.AlwaysDisplayAirBar;
-
-        public uint FogSetting() => fogSetting;
 
         public float HealthToRegen() => healthToRegen;
 
@@ -328,7 +347,7 @@ namespace Oxygen.Components
 
         public float AirTextY() => Config == null ? 0.0f : Config.AirText.y;
 
-        public bool HasAirConfig() => Config != null;
+        public bool HasConfig => Config != null;
 
         public void StartInfectionLoop()
         {
@@ -348,5 +367,11 @@ namespace Oxygen.Components
             m_isInInfectionLoop = false;
         }
 
+        public static AirManager? Current => SNet.HasLocalPlayer && SNet.LocalPlayer.HasPlayerAgent ? SNet.LocalPlayer.PlayerAgent.Cast<PlayerAgent>().GetComponent<AirManager>() : null; 
+    
+        static AirManager()
+        {
+            ClassInjector.RegisterTypeInIl2Cpp<AirManager>();
+        }
     }
 }

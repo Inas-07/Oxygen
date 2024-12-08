@@ -18,7 +18,7 @@ namespace Oxygen.Patches
 
             AirManager.Current.UpdateAirConfig(fogState.FogDataID);
 
-            if(!AirManager.Current.HasAirConfig()) 
+            if(!AirManager.Current.HasConfig) 
             {
                 AirManager.Current.StopInfectionLoop();
             }

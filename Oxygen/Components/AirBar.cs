@@ -3,6 +3,9 @@ using System;
 using UnityEngine;
 using Oxygen.Utils;
 using Oxygen.Config;
+using Microsoft.Extensions.Logging.Abstractions;
+using GTFO.API;
+using Il2CppInterop.Runtime.Injection;
 
 namespace Oxygen.Components
 {
@@ -33,21 +36,23 @@ namespace Oxygen.Components
 
         public static void Setup()
         {
-            if(Current == null)
+            var bar = Current;
+            if (bar != null) return;
+
+            bar = GuiManager.Current?.m_playerLayer?.m_playerStatus?.gameObject.AddComponent<AirBar>();
+            if(bar != null)
             {
-                try
+                LevelAPI.OnEnterLevel += bar.SetupAirBar;
+                LevelAPI.OnLevelCleanup += bar.OnLevelCleanup;
+
+                if(GameStateManager.CurrentStateName == eGameStateName.ExpeditionFail) // checkpoint restore
                 {
-                    Current = GuiManager.Current.m_playerLayer.m_playerStatus.gameObject.AddComponent<AirBar>();
-                    Current.Init();
-                }
-                catch
-                {
-                    Current = null;
+                    bar.SetupAirBar();
                 }
             }
         }
-        
-        void Init()
+
+        internal void SetupAirBar()
         {
             // Instantiate air bar and text. 
             // Only need to instanitiate once.
@@ -67,6 +72,11 @@ namespace Oxygen.Components
                 m_airTextX = m_airTextLocalization.transform.position.x;
                 m_airTextY = m_airTextLocalization.transform.position.y;
                 m_airTextZ = m_airTextLocalization.transform.position.z;
+
+                for (int i = 0; i < m_airTextLocalization.gameObject.transform.childCount; i++)
+                {
+                    m_airTextLocalization.gameObject.transform.GetChild(i).gameObject.SetActive(false);
+                }
             }
 
             // right air bars
@@ -104,7 +114,7 @@ namespace Oxygen.Components
 
             // Initialize Bar
             UpdateAirBar(1f);
-
+            UpdateAirText(AirManager.Current?.Config ?? null);
             SetVisible(false);
         }
 
@@ -118,6 +128,7 @@ namespace Oxygen.Components
         // Set bar length and color
         private void SetAirBar(SpriteRenderer bar, float val)
         {
+            if (bar == null) return;
             bar.size = new Vector2(val * m_airWidth, Mathf.Lerp(this.m_barHeightMin, this.m_barHeightMax, val));
             bar.color = Color.Lerp(m_airLow, m_airHigh, val);
         }
@@ -126,24 +137,24 @@ namespace Oxygen.Components
         private void SetAirPercentageText(float val)
         {
             Color color = Color.Lerp(m_airLow, m_airHigh, val);
+            if (m_airText != null)
+            {
+                m_airText.text = "O<size=75%>2</size>";
+                m_airText.color = color;
+                m_airText.ForceMeshUpdate(true);
+            }
 
-            // percentage
-            //m_airText.text = (val * 100f).ToString("N0") + "%";
-            m_airText.text = "O<size=75%>2</size>";
-            m_airText.color = color;
-            m_airText.ForceMeshUpdate(true);
-
-            m_airTextLocalization.color = color;
-            m_airTextLocalization.ForceMeshUpdate(true);
+            if(m_airTextLocalization != null)
+            {
+                m_airTextLocalization.color = color;
+                m_airTextLocalization.ForceMeshUpdate(true);
+            }
         }
 
         public void UpdateAirText(OxygenBlock config)
         {
-            if (config == null)
-            {
-                return;
-            }
-
+            if (config == null || m_airTextLocalization == null) return;
+            
             string text = config.AirText?.Text ?? string.Empty;
             float x = config.AirText.x;
             float y = config.AirText.y;
@@ -157,16 +168,51 @@ namespace Oxygen.Components
         // Set visibility of air bar
         public void SetVisible(bool vis)
         {
-            m_airText.gameObject.SetActive(vis);
-            m_airTextLocalization.gameObject.SetActive(vis);
-            m_air1.gameObject.SetActive(vis);
-            m_air2.gameObject.SetActive(vis);
+            m_airText?.gameObject.SetActive(vis);
+            m_airTextLocalization?.gameObject.SetActive(vis);
+            m_air1?.gameObject.SetActive(vis);
+            m_air2?.gameObject.SetActive(vis);
         }
 
-        public static void OnLevelCleanup()
+        private void OnLevelCleanup()
         {
-            if (Current == null) return;
-            Current.SetVisible(false);
+            SetVisible(false);
+        }
+
+        private void OnDestroy()
+        {
+            LevelAPI.OnEnterLevel -= SetupAirBar;
+            LevelAPI.OnLevelCleanup -= OnLevelCleanup;
+
+            if (m_airText != null)
+            {
+                GameObject.Destroy(m_airText.gameObject);
+                m_airText = null;
+            }
+            if (m_airTextLocalization != null)
+            {
+                GameObject.Destroy(m_airTextLocalization.gameObject);
+                m_airTextLocalization = null;
+            }
+            if (m_air1 != null)
+            {
+                GameObject.Destroy(m_air1.gameObject);
+                m_air1 = null;
+                m_airBar1 = null;
+            }
+            if (m_air2 != null)
+            {
+                GameObject.Destroy(m_air2.gameObject);
+                m_air2 = null;
+                m_airBar2 = null;
+            }
+        }
+
+        public static AirBar? Current => GuiManager.Current?.m_playerLayer?.m_playerStatus?.gameObject.GetComponent<AirBar>() ?? null;
+    
+        static AirBar()
+        {
+            ClassInjector.RegisterTypeInIl2Cpp<AirBar>();
         }
     }
 }

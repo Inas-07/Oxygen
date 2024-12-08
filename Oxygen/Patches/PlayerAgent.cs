@@ -11,7 +11,7 @@ namespace Oxygen.Patches
         [HarmonyPatch(typeof(PlayerAgent), nameof(PlayerAgent.ReceiveModification))]
         public static void ReceiveModification(PlayerAgent __instance, ref EV_ModificationData data)
         {
-            if (!AirManager.Current.HasAirConfig()) return;
+            if (!AirManager.Current.HasConfig) return;
 
             if (data.health != 0.0)
             {
@@ -31,9 +31,9 @@ namespace Oxygen.Patches
         [HarmonyPatch(typeof(PlayerAgent), nameof(PlayerAgent.Setup))]
         internal static void Post_Setup(PlayerAgent __instance)
         {
-            if (!__instance.IsLocallyOwned)
+            if (!__instance.IsLocallyOwned || __instance.gameObject.GetComponent<AirManager>() != null)
                 return;
-            AirManager.Setup(__instance);
+            __instance.gameObject.AddComponent<AirManager>().Setup();
         }
     }
 }

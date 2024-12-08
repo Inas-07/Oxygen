@@ -75,7 +75,8 @@ namespace Oxygen.Patches
             //                                      oxygen
             // ========================================================================================
 
-            if (!AirManager.Current.HasAirConfig())
+
+            if (!AirManager.Current.HasConfig)
             {
                 AirPlane.Current.Unregister();
                 return false;
